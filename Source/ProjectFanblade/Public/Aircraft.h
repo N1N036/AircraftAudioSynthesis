@@ -7,6 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "Aircraft.generated.h"
 
+class UAircraftAudioComponent;
 class UCapsuleComponent;
 class UAircraftMovementComponent;
 
@@ -30,6 +31,18 @@ protected:
 	/** The movement component for the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftMovementComponent)
 	UAircraftMovementComponent* AircraftMovementComponent {nullptr};
+
+	/** The audio component for the aircraft. */
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftAudioComponent)
+	UAircraftAudioComponent* AircraftAudioComponent {nullptr};
+
+	/** The SpringArm that will handle the camera's motion and zoom. */
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetCameraBoom)
+	USpringArmComponent* CameraBoom {nullptr};
+
+	/** The camera of the aircraft. */
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetCameraComponent)
+	UCameraComponent* CameraComponent {nullptr};
 
 	/** The weight of the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetWeight, Meta = (Units = "kilograms", Delta = "100"))
@@ -56,6 +69,15 @@ public:
 	
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE UAircraftMovementComponent* GetAircraftMovementComponent() const { return AircraftMovementComponent; }
+
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE UAircraftAudioComponent* GetAircraftAudioComponent() const { return AircraftAudioComponent; }
+
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE int32 GetWeight() const { return Weight; }

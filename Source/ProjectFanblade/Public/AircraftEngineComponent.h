@@ -18,7 +18,7 @@ enum class EEngineState : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEngineStateChangedDelegate, EEngineState, NewState);
 
-UCLASS(Abstract, ClassGroup = "Aircraft", Meta = (BlueprintSpawnableComponent))
+UCLASS(BlueprintType, ClassGroup = "Aircraft", Meta = (BlueprintSpawnableComponent))
 class PROJECTFANBLADE_API UAircraftEngineComponent : public USceneComponent
 {
 	GENERATED_BODY()
@@ -54,7 +54,7 @@ protected:
 	/** Global scalar for the engine's acceleration speed. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Engine", Meta = (DisplayName = "Engine Acceleration Scalar",
 		ClampMin = "0.1", ClampMax = "2", UIMin = "0.1", UIMax = "2"))
-	float EngineAccelerationScalar;
+	float EngineAccelerationScalar {1.0f};
 
 	/** The engine acceleration curve. This defines how quickly the engine can accelerate. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Engine", Meta = (DisplayName = "Engine Acceleration"))
@@ -93,7 +93,7 @@ public:
 	FORCEINLINE float GetPowerTarget() const { return PowerTarget; }
 
 	UFUNCTION(BlueprintSetter)
-	FORCEINLINE void SetPower(const float Value) { PowerTarget = FMath::Clamp(Value, 0.0f, 100.0f); }
+	FORCEINLINE void SetPower(const float Value) { PowerTarget = FMath::Clamp(Value, IdlePower, 100.0f); }
 
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE float GetOutputThrust() const { return OutputThrust; }

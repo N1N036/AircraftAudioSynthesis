@@ -28,7 +28,8 @@ void UAircraftEngineComponent::UpdateEnginePower(const float DeltaTime)
 {
 	if (EngineAccelerationCurve)
 	{
-		float Acceleration = {EngineAccelerationCurve->GetFloatValue(Power)};
+		const float NormalizedPower {Power / 100.0f};
+		float Acceleration {EngineAccelerationCurve->GetFloatValue(NormalizedPower)};
 		Acceleration *= EngineAccelerationScalar;
 		Power = FMath::FInterpTo(Power, PowerTarget, DeltaTime, Acceleration);
 	}

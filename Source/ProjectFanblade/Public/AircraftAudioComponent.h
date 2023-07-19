@@ -7,8 +7,8 @@
 #include "Components/SceneComponent.h"
 #include "AircraftAudioComponent.generated.h"
 
-UCLASS(Abstract, ClassGroup = "Aircraft", Meta = (BlueprintSpawnableComponent))
-class PROJECTFANBLADE_API UAircraftAudioComponent : public USceneComponent
+UCLASS(Blueprintable, BlueprintType, ClassGroup = "Aircraft", Meta = (BlueprintSpawnableComponent))
+class PROJECTFANBLADE_API UAircraftAudioComponent : public UActorComponent
 {
 	GENERATED_BODY()
 	
