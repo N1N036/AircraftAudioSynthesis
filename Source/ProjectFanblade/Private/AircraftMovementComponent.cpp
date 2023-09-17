@@ -4,6 +4,7 @@
 #include "AircraftMovementComponent.h"
 #include "Aircraft.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "JSBSimFlightDynamicsModel/Public/JSBSimMovementComponent.h"
 
 DEFINE_LOG_CATEGORY_CLASS(UAircraftMovementComponent, LogAircraftMovement)
 

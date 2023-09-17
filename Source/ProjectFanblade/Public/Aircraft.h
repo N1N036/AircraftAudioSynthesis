@@ -5,7 +5,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "JSBSimFlightDynamicsModel/Public/JSBSimMovementComponent.h"
 #include "Aircraft.generated.h"
+
+
 
 class UAircraftAudioComponent;
 class UCapsuleComponent;
@@ -30,7 +33,7 @@ protected:
 
 	/** The movement component for the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftMovementComponent)
-	UAircraftMovementComponent* AircraftMovementComponent {nullptr};
+	UJSBSimMovementComponent* AircraftMovementComponent {nullptr};
 
 	/** The audio component for the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftAudioComponent)
@@ -68,7 +71,7 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }
 	
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE UAircraftMovementComponent* GetAircraftMovementComponent() const { return AircraftMovementComponent; }
+	FORCEINLINE UJSBSimMovementComponent* GetAircraftMovementComponent() const { return AircraftMovementComponent; }
 
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE UAircraftAudioComponent* GetAircraftAudioComponent() const { return AircraftAudioComponent; }
@@ -78,10 +81,14 @@ public:
 	
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComponent; }
+	
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE	UJSBSimMovementComponent* GetMovement() const { return AircraftMovementComponent; };
 
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE int32 GetWeight() const { return Weight; }
 	
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE bool GetIsAirborne() const { return IsAirborne; }
+	
 };

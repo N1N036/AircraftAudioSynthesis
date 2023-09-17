@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PropertyList>
+  
+	<sim>
+		
+		<model>
+			<livery>
+				<name type="string">Italian Aeronautica Militare 32 Stormo</name>
+				<texture>Liveries/IAM32St.jpg</texture>
+			</livery>
+		</model>
+		
+	</sim>
+
+</PropertyList>

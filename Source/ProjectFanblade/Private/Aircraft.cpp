@@ -4,9 +4,10 @@
 #include "Aircraft.h"
 
 #include "AircraftAudioComponent.h"
-#include "AircraftMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "JSBSimMovementComponent.h"
 
 DEFINE_LOG_CATEGORY_CLASS(AAircraft, LogAircraft)
 
@@ -20,20 +21,22 @@ AAircraft::AAircraft()
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
 	SkeletalMeshComponent->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
-	AircraftMovementComponent = CreateDefaultSubobject<UAircraftMovementComponent>(TEXT("MovementComponent"));
-
+	AircraftMovementComponent = CreateDefaultSubobject<UJSBSimMovementComponent>(TEXT("JSBSimMovementComponent"));
+	
 	AircraftAudioComponent = CreateDefaultSubobject<UAircraftAudioComponent>(TEXT("AudioComponent"));
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->SetupAttachment(SkeletalMeshComponent);
 	CameraBoom->TargetArmLength = 2000; 
-	CameraBoom->bUsePawnControlRotation = true; 
+	CameraBoom->bUsePawnControlRotation = false; 
 	CameraBoom->bEnableCameraLag = true; 
 	CameraBoom->CameraLagSpeed = 3.0f; 
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	CameraComponent->bUsePawnControlRotation = false;
+
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AAircraft::BeginPlay()

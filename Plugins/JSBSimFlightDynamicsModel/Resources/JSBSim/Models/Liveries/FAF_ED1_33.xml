@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PropertyList>
+  
+	<sim>
+		
+		<model>
+			<livery>
+				<name type="string">French Air Force ED 1/33</name>
+				<texture>Liveries/FAF_ED1_33.jpg</texture>
+			</livery>
+		</model>
+		
+	</sim>
+
+</PropertyList>
