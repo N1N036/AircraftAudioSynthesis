@@ -30,7 +30,9 @@ AAircraft::AAircraft()
 	CameraBoom->TargetArmLength = 2000; 
 	CameraBoom->bUsePawnControlRotation = false; 
 	CameraBoom->bEnableCameraLag = true; 
-	CameraBoom->CameraLagSpeed = 3.0f; 
+	CameraBoom->CameraLagSpeed = 3.0f;
+	CameraBoom->bEnableCameraRotationLag = true;
+	CameraBoom->CameraRotationLagSpeed = 3.0f;
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
@@ -47,6 +49,26 @@ void AAircraft::BeginPlay()
 void AAircraft::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Get the location of the plane and the camera
+	FVector PlaneLocation = SkeletalMeshComponent->GetComponentLocation();
+	FVector CameraLocation = CameraComponent->GetComponentLocation();
+
+	// Calculate the direction vector from the camera to the plane
+	FVector Direction = PlaneLocation - CameraLocation;
+	Direction.Normalize();
+
+	// Calculate the new rotation for the camera to look at the plane
+	FRotator DesiredRotation = Direction.Rotation();
+    
+	// Get the current camera rotation
+	FRotator CurrentRotation = CameraComponent->GetComponentRotation();
+
+	// Interpolate between the current rotation and the desired rotation
+	FRotator NewRotation = FMath::RInterpTo(CurrentRotation, DesiredRotation, DeltaTime, 2.0f);
+
+	// Apply the new rotation to the camera
+	CameraComponent->SetWorldRotation(NewRotation);
 }
 
 double AAircraft::GetAltitude() const
