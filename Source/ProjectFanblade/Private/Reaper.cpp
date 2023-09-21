@@ -3,9 +3,23 @@
 
 #include "Reaper.h"
 
+#include "ReaperAudioComponent.h"
+#include "Components/AudioComponent.h"
+
+
 AReaper::AReaper()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	AircraftAudioComponent = CreateDefaultSubobject<UReaperAudioComponent>(TEXT("ReaperAudioComponent"));
+	
+	PropAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("PropAudioComponent"));
+	PropAudioComponent->SetupAttachment(SkeletalMeshComponent);
+	PropAudioComponent->AttachToComponent(SkeletalMeshComponent,FAttachmentTransformRules::KeepRelativeTransform);
+
+	MotorAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("MotorAudioComponent"));
+	MotorAudioComponent->SetupAttachment(SkeletalMeshComponent);
+	MotorAudioComponent->AttachToComponent(SkeletalMeshComponent,FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 void AReaper::BeginPlay()

@@ -17,10 +17,27 @@ class PROJECTFANBLADE_API AReaper : public AAirplane
 	GENERATED_BODY()
 
 public:
+	
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	UAudioComponent* PropAudioComponent;
+	UPROPERTY(EditDefaultsOnly)
+	UAudioComponent* MotorAudioComponent;
+
+public:
 	AReaper();
 
 	virtual void Tick(float DeltaTime) override;
 
+
+	
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	UAudioComponent* GetPropAudioComponent() const { return PropAudioComponent; }
+	
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	UAudioComponent* GetMotorAudioComponent() const { return MotorAudioComponent; }
+	
 protected:
+	
 	virtual void BeginPlay() override;
 };

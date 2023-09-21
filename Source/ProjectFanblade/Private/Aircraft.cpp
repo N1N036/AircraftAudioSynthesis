@@ -22,8 +22,6 @@ AAircraft::AAircraft()
 	SkeletalMeshComponent->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	AircraftMovementComponent = CreateDefaultSubobject<UJSBSimMovementComponent>(TEXT("JSBSimMovementComponent"));
-	
-	AircraftAudioComponent = CreateDefaultSubobject<UAircraftAudioComponent>(TEXT("AudioComponent"));
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(SkeletalMeshComponent);
