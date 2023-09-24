@@ -12,5 +12,27 @@
 				"Engine"
 			]
 		}
+	],
+	"Plugins": [
+		{
+			"Name": "AudioModulation",
+			"Enabled": true
+		},
+		{
+			"Name": "AudioMotorSim",
+			"Enabled": true
+		},
+		{
+			"Name": "MotoSynth",
+			"Enabled": true
+		},
+		{
+			"Name": "ResonanceAudio",
+			"Enabled": false
+		},
+		{
+			"Name": "Spatialization",
+			"Enabled": true
+		}
 	]
 }

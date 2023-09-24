@@ -19,9 +19,9 @@ class PROJECTFANBLADE_API AReaper : public AAirplane
 public:
 	
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAudioComponent* PropAudioComponent;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAudioComponent* MotorAudioComponent;
 
 public:

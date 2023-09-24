@@ -58,21 +58,9 @@ void UReaperAudioComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 		
 		DopplerShift = CalculateDopplerShift(SpeedOfSound,PlayerVelocity,PlayerPosition,SourceVelocity,SourcePosition);
-		/** Log the vectors and the Doppler shift */
-		UE_LOG(LogTemp, Warning, TEXT("SpeedOfSound: %f"), SpeedOfSound);
-		UE_LOG(LogTemp, Warning, TEXT("PlayerVelocity: %s"), *PlayerVelocity.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("PlayerPosition: %s"), *PlayerPosition.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("SourceVelocity: %s"), *SourceVelocity.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("SourcePosition: %s"), *SourcePosition.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("DopplerShift: %f"), DopplerShift);
 
-		
-		UE_LOG(LogTemp, Warning, TEXT("DopplerShift: %F"), DopplerShift);
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is null."));
-	}
+
 	
 	if(!PropAudioComponent){return;}
 	//for now i get the throttle since i know this returns a value, more setup of the flight model might be needed to get more acurate engine and prop info.

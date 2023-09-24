@@ -60,7 +60,12 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	/** Exposing the velocity of the JSBSim comp to BP.*/
+	UFUNCTION(BlueprintCallable)
+	void SetJSBSIMVelocity(float Vnew);
+
 	/** Returns the aircraft's relative height. */
+	UFUNCTION(BlueprintCallable)
 	double GetAltitude() const;
 
 protected:

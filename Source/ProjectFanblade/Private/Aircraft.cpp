@@ -37,6 +37,8 @@ AAircraft::AAircraft()
 	CameraComponent->bUsePawnControlRotation = false;
 
 	PrimaryActorTick.bCanEverTick = true;
+
+
 }
 
 void AAircraft::BeginPlay()
@@ -67,6 +69,12 @@ void AAircraft::Tick(float DeltaTime)
 
 	// Apply the new rotation to the camera
 	CameraComponent->SetWorldRotation(NewRotation);
+}
+
+void AAircraft::SetJSBSIMVelocity(float Vnew)
+{
+	AircraftMovementComponent->AircraftState.CalibratedAirSpeedKts = Vnew;
+
 }
 
 double AAircraft::GetAltitude() const

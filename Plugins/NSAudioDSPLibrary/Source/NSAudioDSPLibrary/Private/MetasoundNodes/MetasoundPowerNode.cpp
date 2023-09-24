@@ -103,6 +103,7 @@ namespace Metasound
         FAudioBufferReadRef AudioIn = InputCollection.GetDataReadReferenceOrConstruct<FAudioBuffer>(METASOUND_GET_PARAM_NAME(InParamNameAudioInput), InParams.OperatorSettings);
         FFloatReadRef InPower   = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNamePower), InParams.OperatorSettings);
 
+        //The DSP operations are done by a seperate class so we can share the operations between different implementation types.
         return MakeUnique<FPowerOperator>(InParams.OperatorSettings, AudioIn, InPower);
     }
 
