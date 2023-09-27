@@ -34,7 +34,7 @@ namespace DSPProcessing
     void FModulatedDelay::ProcessAudioBuffer(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples)
     {
         float DelayLength = DelayBuffer.GetDelayLengthSamples();
-        float FeedbackCoefficient = 0.5f;  // Adjust between 0.0 to 1.0 as needed
+        float FeedbackCoefficient = 0.0f;  //TODO: YES THIS IS WHAT I WANT!!!!! now i need to update this coefficient and streamline all the input and output stuff.
 
         for (int32 FrameIndex = 0; FrameIndex < NumSamples; ++FrameIndex)
         {
@@ -42,7 +42,7 @@ namespace DSPProcessing
             // Write sample with feedback into delay buffer and increment
             DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex]);
             // Compute modulated delay length
-            float ModulatedDelayLength = DelayLength - (DelayLength * (InModulation[FrameIndex] + .5 * FeedbackSample));
+            float ModulatedDelayLength = DelayLength - (DelayLength * (InModulation[FrameIndex] + FeedbackCoefficient * FeedbackSample));
 
           
 
