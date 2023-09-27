@@ -1,27 +1,30 @@
-﻿#include "DSPProcessing/Power.h"
+﻿#include "DSPProcessing/ModulatedDelay.h"
 #include "MetasoundEnumRegistrationMacro.h"
 #include "MetasoundParamHelper.h"
 
 namespace Metasound
 {
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_PowerNode"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ModulatedDelayNode"
 
-	namespace PowerNode
+	namespace ModulatedDelayNode
 	{
 		METASOUND_PARAM(InParamNameAudioInput, "In",        "Audio input.")
-		METASOUND_PARAM(InParamNamePower,  "Power", "To which power we will amplify the input signal.")
+		METASOUND_PARAM(InParamNameModulationInput,  "Modulation", "The delay modulation signal.")
 		METASOUND_PARAM(OutParamNameAudio,     "Out",       "Audio output.")
 	}
 
 #undef LOCTEXT_NAMESPACE
-	class FPowerOperator : public TExecutableOperator<FPowerOperator>
+	class FModulatedDelayOperator : public TExecutableOperator<FModulatedDelayOperator>
 	{
 	public:
 		static const FNodeClassMetadata& GetNodeInfo();
 		static const FVertexInterface& GetVertexInterface();
 		static TUniquePtr<IOperator> CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors);
 
-		FPowerOperator(const FOperatorSettings& InSettings, const FAudioBufferReadRef& InAudioInput, const FFloatReadRef& InPower);
+		FModulatedDelayOperator(
+			const FOperatorSettings& InSettings,
+			const FAudioBufferReadRef& InAudioInput,
+			const FAudioBufferReadRef& InModulationInput); //intentionally keeping this signal as float
 
 		virtual FDataReferenceCollection GetInputs()  const override;
 		virtual FDataReferenceCollection GetOutputs() const override;
@@ -30,15 +33,20 @@ namespace Metasound
 
 	private:
 		FAudioBufferReadRef  AudioInput;
+		FAudioBufferReadRef ModulationInput;
 		FAudioBufferWriteRef AudioOutput;
 
-		DSPProcessing::FPower PowerDSPProcessor;
+		// The internal delay buffer
+		Audio::FDelay DelayBuffer;
 
-		FFloatReadRef Power;
+		//The effect processor using a delay buffer.
+		DSPProcessing::FModulatedDelay ModulatedDelayDSPProcessor;
+
+		//FFloatReadRef Modulation; //again keep the mod signal as float for now.
 	};
-	class FPowerNode : public FNodeFacade
+	class FModulatedDelayNode : public FNodeFacade
 	{
 	public:
-		FPowerNode(const FNodeInitData& InitData);
+		FModulatedDelayNode(const FNodeInitData& InitData);
 	};
 }
