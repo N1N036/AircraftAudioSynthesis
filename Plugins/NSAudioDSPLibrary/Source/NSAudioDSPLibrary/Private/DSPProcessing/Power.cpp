@@ -3,6 +3,8 @@
 
 namespace DSPProcessing
 {
+	FPower::FPower(){};
+	
 	void FPower::Init()
 	{
 	}
