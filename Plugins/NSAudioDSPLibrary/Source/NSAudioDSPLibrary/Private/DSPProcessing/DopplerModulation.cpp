@@ -9,7 +9,6 @@ namespace DSPProcessing
 
     FDopplerModulation::FDopplerModulation()
     {
-
     }
 
 
@@ -20,12 +19,25 @@ namespace DSPProcessing
         DelayBuffer.SetDelayMsec(DelayTimeMax);
     }
 
-    void FDopplerModulation::SetParameters(float InDryLevel, float InWetLevel, float InFeedback, float InMaxDelayTime)
+    void FDopplerModulation::SetParameters(
+        float InDelayFeedback,
+        float InModulationFeedback,
+        float InDelayTimeSeconds,
+        bool InInvertModulationSignal)
     {
-        DryLevel = InDryLevel;
-        WetLevel = InWetLevel;
-        Feedback = InFeedback;
-        MaxDelayTimeSeconds = InMaxDelayTime;
+        DelayFeedback = InDelayFeedback;
+        float ModulationFeedback = InModulationFeedback; 
+        DelayTimeSeconds = InDelayTimeSeconds;
+        bool InvertModulationSignal = InInvertModulationSignal;
+
+        /** Invert the modulation feedback coefficient based on the boolean. */
+        InvertedModulationFeedback = InvertModulationSignal ? -ModulationFeedback : ModulationFeedback;
+
+        UpdateDelay();
+    }
+
+    void FDopplerModulation::UpdateDelay() {
+        DelayBuffer.SetEasedDelayMsec(DelayTimeSeconds);
     }
 
 
@@ -34,22 +46,20 @@ namespace DSPProcessing
     void FDopplerModulation::ProcessAudioBuffer(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples)
     {
         float DelayLength = DelayBuffer.GetDelayLengthSamples();
-        float FeedbackCoefficient = 0.0f;  //TODO: YES THIS IS WHAT I WANT!!!!! now i need to update this coefficient and streamline all the input and output stuff.
+
 
         for (int32 FrameIndex = 0; FrameIndex < NumSamples; ++FrameIndex)
         {
 
-            // Write sample with feedback into delay buffer and increment
-            DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex]);
-            // Compute modulated delay length
-            float ModulatedDelayLength = DelayLength - (DelayLength * (InModulation[FrameIndex] + FeedbackCoefficient * FeedbackSample));
+            /** Write sample with feedback into delay buffer and increment */
+            DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex] + DelayFeedback * FeedbackSample);
 
-          
+            /** Compute modulated delay length with feedback. */
+            float ModulatedDelayLength = DelayLength - (DelayLength * (InModulation[FrameIndex] + InvertedModulationFeedback * FeedbackSample));
 
-            // Write the modulated sample to output buffer
+            /** Write the modulated sample to output buffer. */
             OutBuffer[FrameIndex] = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
 
-            // Apply feedback by scaling the output and summing it with the input
             FeedbackSample = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
         }
     }

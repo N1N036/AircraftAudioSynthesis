@@ -1,6 +1,8 @@
 ﻿#include "MetasoundNodes/MetasoundDopplerModulationNode.h"
 #include "MetasoundOperatorSettings.h"
 
+
+
 #define LOCTEXT_NAMESPACE "MetasoundStandardNodes_DopplerModulationNode"
 
 namespace Metasound
@@ -8,13 +10,25 @@ namespace Metasound
     //------------------------------------------------------------------------------------
     // FDopplerModulationOperator
     //------------------------------------------------------------------------------------
-    FDopplerModulationOperator::FDopplerModulationOperator(const FOperatorSettings& InSettings, const FAudioBufferReadRef& InAudioInput, const FAudioBufferReadRef& InModulationInput)
+    FDopplerModulationOperator::FDopplerModulationOperator(
+            const FOperatorSettings& InSettings,
+			const FAudioBufferReadRef& InAudioInput,
+			const FAudioBufferReadRef& InModulationInput,
+			const FFloatReadRef& InDelayFeedbackInput,
+			const FFloatReadRef& InModulationFeedbackInput,
+			const FFloatReadRef& InDelayTimeInput,
+			const FBoolReadRef& InInvertModulationSignalInput)
+
         : AudioInput(InAudioInput)
         , ModulationInput(InModulationInput)
+        , DelayFeedbackInput(InDelayFeedbackInput)
+        , ModulationFeedbackInput(InModulationFeedbackInput)
+        , DelayTimeInput(InDelayTimeInput)
+        , InvertModulationSignalInput(InInvertModulationSignalInput)
         , AudioOutput(FAudioBufferWriteRef::CreateNew(InSettings))
     {
-        DopplerModulationDSPProcessor.Init(InSettings.GetSampleRate(), 0.1); //TODO: add the delay time as stateless input. 
-    }
+        DopplerModulationDSPProcessor.Init(InSettings.GetSampleRate(), 1.0); //For now i set the max delay time to arbitrary number 1
+    };
 
     FDataReferenceCollection FDopplerModulationOperator::GetInputs() const
     {
@@ -24,6 +38,13 @@ namespace Metasound
 
         InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameAudioInput), AudioInput);
         InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameModulationInput), ModulationInput);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameDelayFeedbackInput), DelayFeedbackInput);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameModulationFeedbackInput), ModulationFeedbackInput);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameDelayTimeInput), DelayTimeInput);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameInvertModulationSignalInput), InvertModulationSignalInput);
+
+     
+
 
         return InputDataReferences;
     }
@@ -41,16 +62,24 @@ namespace Metasound
 
     void FDopplerModulationOperator::Execute()
     {
-        const float* InputAudio = AudioInput->GetData();
-        const float* InputModulation = ModulationInput->GetData();
-        float* OutputAudio      = AudioOutput->GetData();
+        /** Audio buffer values. */
+        const float* InputAudio{ AudioInput->GetData() };
+        const float* InputModulation{ ModulationInput->GetData() };
+        float* OutputAudio{ AudioOutput->GetData() };
+
+
+        /** Parameters. */
+        float DelayFeedbackClamped{ FMath::Clamp(*DelayFeedbackInput, 0.0f, 1.0f - SMALL_NUMBER) };
+        float ModulationFeedbackClamped{ FMath::Clamp(*ModulationFeedbackInput, 0.0f, 1.0f - SMALL_NUMBER) };
+        float DelayTimeClamped{ FMath::Clamp(*DelayTimeInput, 0.0f, 1.0f ) }; //TODO: GetMaxDelayTime.
+        bool InvertModulationSignal{ *InvertModulationSignalInput };
 
         const int32 NumSamples = AudioInput->Num();
 
         if(!InputAudio || !OutputAudio){return;}
-        DopplerModulationDSPProcessor.SetParameters(1,1,1,1);
+        DopplerModulationDSPProcessor.SetParameters(DelayFeedbackClamped, ModulationFeedbackClamped, DelayTimeClamped, InvertModulationSignal);
 
-        DopplerModulationDSPProcessor.ProcessAudioBuffer(InputAudio,InputModulation, OutputAudio, NumSamples); //TODO: for now i just put the input audio as modulation, a new channel needs to be added later
+        DopplerModulationDSPProcessor.ProcessAudioBuffer(InputAudio,InputModulation, OutputAudio, NumSamples);
     }
 
     const FVertexInterface& FDopplerModulationOperator::GetVertexInterface()
@@ -60,7 +89,11 @@ namespace Metasound
         static const FVertexInterface Interface(
             FInputVertexInterface(
                 TInputDataVertex<FAudioBuffer>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameAudioInput)),
-                TInputDataVertex<FAudioBuffer>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameModulationInput))
+                TInputDataVertex<FAudioBuffer>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameModulationInput)),
+                TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameDelayFeedbackInput), 0.0f),
+                TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameModulationFeedbackInput), 0.0f),
+                TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameDelayTimeInput), 0.0f),
+                TInputDataVertex<bool>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameInvertModulationSignalInput), 0.0f)
             ),
 
             FOutputVertexInterface(
@@ -102,11 +135,18 @@ namespace Metasound
         const FDataReferenceCollection& InputCollection = InParams.InputDataReferences;
         const FInputVertexInterface& InputInterface     = GetVertexInterface().GetInputInterface();
 
+
+
         FAudioBufferReadRef AudioIn = InputCollection.GetDataReadReferenceOrConstruct<FAudioBuffer>(METASOUND_GET_PARAM_NAME(InParamNameAudioInput), InParams.OperatorSettings);
         FAudioBufferReadRef ModulationIn = InputCollection.GetDataReadReferenceOrConstruct<FAudioBuffer>(METASOUND_GET_PARAM_NAME(InParamNameModulationInput), InParams.OperatorSettings);
+        
+        FFloatReadRef DelayFeedbackIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameDelayFeedbackInput), InParams.OperatorSettings);
+        FFloatReadRef ModulationFeedbackIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameModulationFeedbackInput), InParams.OperatorSettings);
+        FFloatReadRef DelayTimeIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameDelayTimeInput), InParams.OperatorSettings);
+        FBoolReadRef InvertModulationIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<bool>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameInvertModulationSignalInput), InParams.OperatorSettings);
 
         //The DSP operations are done by a seperate class so we can share the operations between different implementation types.
-        return MakeUnique<FDopplerModulationOperator>(InParams.OperatorSettings, AudioIn, ModulationIn);
+        return MakeUnique<FDopplerModulationOperator>(InParams.OperatorSettings, AudioIn, ModulationIn, DelayFeedbackIn, ModulationFeedbackIn, DelayTimeIn, InvertModulationIn);
     }
 
 

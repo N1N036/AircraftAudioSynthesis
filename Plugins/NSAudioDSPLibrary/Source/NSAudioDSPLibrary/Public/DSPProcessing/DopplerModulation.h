@@ -13,30 +13,32 @@ namespace DSPProcessing
 	public:
 		FDopplerModulation();
 
-		void Init(float InSampleRate, float DelayTimeMax);
+		void Init(float InSampleRate, float DelayTime);
 
 		void SetParameters(
-			float InDryLevel,
-			float InWetLevel,
-			float InFeedback,
-			float InMaxDelayTimeSeconds);
+			float InDelayFeedback,
+			float InModulationFeedback,
+			float InDelayTimeSeconds,
+			bool InInvertModulationSignal);
+
+		void UpdateDelay();
 
 		
 		void ProcessAudioBuffer(const float* InBuffer,const float* InModulation, float* OutBuffer, int32 NumSamples);
 
 	private:
-		
-		float DelayTime;
-		float DryLevel;
-		float WetLevel;
-		float Feedback;
+
+		float DelayFeedback;
+		//float ModulationFeedback; local variable
+		float DelayTimeSeconds;
+		//bool InvertModulationSignal; local variable
+
+		float InvertedModulationFeedback;
 
 		// The internal delay buffer
 		Audio::FDelay DelayBuffer;
 		
 		float FeedbackSample{0.f};
-
-		float MaxDelayTimeSeconds{0.0f};
 
 
 	};

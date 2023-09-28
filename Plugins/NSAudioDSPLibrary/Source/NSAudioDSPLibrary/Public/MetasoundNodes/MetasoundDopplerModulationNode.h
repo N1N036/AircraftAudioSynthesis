@@ -1,6 +1,10 @@
 ﻿#include "DSPProcessing/DopplerModulation.h"
 #include "MetasoundEnumRegistrationMacro.h"
 #include "MetasoundParamHelper.h"
+#include "MetasoundTime.h"
+#include "MetasoundPrimitives.h"
+#include "MetasoundOperatorInterface.h"
+
 
 namespace Metasound
 {
@@ -8,9 +12,18 @@ namespace Metasound
 
 	namespace DopplerModulationNode
 	{
-		METASOUND_PARAM(InParamNameAudioInput, "In",        "Audio input.")
+		METASOUND_PARAM(InParamNameAudioInput, "In", "Audio input.")
 		METASOUND_PARAM(InParamNameModulationInput,  "Modulation", "The delay modulation signal.")
-		METASOUND_PARAM(OutParamNameAudio,     "Out",       "Audio output.")
+		
+		METASOUND_PARAM(InParamNameDelayFeedbackInput, "DelayFeedback", "How much the output signal will be fed back into the inpot signal.")
+		METASOUND_PARAM(InParamNameModulationFeedbackInput, "ModulationFeedback", "How much the output signal will be fed back into the modulation signal.")
+		METASOUND_PARAM(InParamNameDelayTimeInput, "DelayTime", "How long the delay sould be, the modulation modulates from no delay to this delay time.")
+		METASOUND_PARAM(InParamNameInvertModulationSignalInput, "InvertModulation", "Flip the modulation signal for a variation of the modulation feedback effect.")
+		METASOUND_PARAM(OutParamNameAudio, "Out","Audio output.")
+
+		static constexpr float MinMaxDelaySeconds = 0.001f;
+		static constexpr float MaxMaxDelaySeconds = 1000.f;
+		static constexpr float DefaultMaxDelaySeconds = 5.0f;
 	}
 
 #undef LOCTEXT_NAMESPACE
@@ -24,7 +37,11 @@ namespace Metasound
 		FDopplerModulationOperator(
 			const FOperatorSettings& InSettings,
 			const FAudioBufferReadRef& InAudioInput,
-			const FAudioBufferReadRef& InModulationInput); //intentionally keeping this signal as float
+			const FAudioBufferReadRef& InModulationInput,
+			const FFloatReadRef& InDelayFeedbackInput,
+			const FFloatReadRef& InModulationFeedbackInput,
+			const FFloatReadRef& InDelayTimeInput,
+			const FBoolReadRef& InInvertModulationSignalInput);
 
 		virtual FDataReferenceCollection GetInputs()  const override;
 		virtual FDataReferenceCollection GetOutputs() const override;
@@ -32,9 +49,19 @@ namespace Metasound
 		void Execute();
 
 	private:
-		FAudioBufferReadRef  AudioInput;
+		/**Audio signals */
+		FAudioBufferReadRef AudioInput;
 		FAudioBufferReadRef ModulationInput;
 		FAudioBufferWriteRef AudioOutput;
+
+		/**Parameter input. */
+		FFloatReadRef DelayFeedbackInput;
+		FFloatReadRef ModulationFeedbackInput;
+		FFloatReadRef DelayTimeInput;
+		FBoolReadRef InvertModulationSignalInput;
+
+		
+		float MaxDelayTimeSeconds{ 1.0 };//TODO: figure out how to get the max delay value from Delay::"
 
 		// The internal delay buffer
 		Audio::FDelay DelayBuffer;
