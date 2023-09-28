@@ -1,24 +1,24 @@
-﻿#include "MetasoundNodes/MetasoundModulatedDelayNode.h"
+﻿#include "MetasoundNodes/MetasoundDopplerModulationNode.h"
 #include "MetasoundOperatorSettings.h"
 
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ModulatedDelayNode"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_DopplerModulationNode"
 
 namespace Metasound
 {
     //------------------------------------------------------------------------------------
-    // FModulatedDelayOperator
+    // FDopplerModulationOperator
     //------------------------------------------------------------------------------------
-    FModulatedDelayOperator::FModulatedDelayOperator(const FOperatorSettings& InSettings, const FAudioBufferReadRef& InAudioInput, const FAudioBufferReadRef& InModulationInput)
+    FDopplerModulationOperator::FDopplerModulationOperator(const FOperatorSettings& InSettings, const FAudioBufferReadRef& InAudioInput, const FAudioBufferReadRef& InModulationInput)
         : AudioInput(InAudioInput)
         , ModulationInput(InModulationInput)
         , AudioOutput(FAudioBufferWriteRef::CreateNew(InSettings))
     {
-        ModulatedDelayDSPProcessor.Init(InSettings.GetSampleRate(), 0.1); //TODO: add the delay time as stateless input. 
+        DopplerModulationDSPProcessor.Init(InSettings.GetSampleRate(), 0.1); //TODO: add the delay time as stateless input. 
     }
 
-    FDataReferenceCollection FModulatedDelayOperator::GetInputs() const
+    FDataReferenceCollection FDopplerModulationOperator::GetInputs() const
     {
-        using namespace ModulatedDelayNode;
+        using namespace DopplerModulationNode;
 
         FDataReferenceCollection InputDataReferences;
 
@@ -28,9 +28,9 @@ namespace Metasound
         return InputDataReferences;
     }
 
-    FDataReferenceCollection FModulatedDelayOperator::GetOutputs() const
+    FDataReferenceCollection FDopplerModulationOperator::GetOutputs() const
     {
-        using namespace ModulatedDelayNode;
+        using namespace DopplerModulationNode;
 
         FDataReferenceCollection OutputDataReferences;
 
@@ -39,24 +39,23 @@ namespace Metasound
         return OutputDataReferences;
     }
 
-    void FModulatedDelayOperator::Execute()
-    {//this line caused EXCEPTION_ACCESS_VIOLATION reading address 0x0000000000000000
+    void FDopplerModulationOperator::Execute()
+    {
         const float* InputAudio = AudioInput->GetData();
         const float* InputModulation = ModulationInput->GetData();
-        //const float* InputModulation = ModulationInput->GetData(); //TODO: Use this.
         float* OutputAudio      = AudioOutput->GetData();
 
         const int32 NumSamples = AudioInput->Num();
 
         if(!InputAudio || !OutputAudio){return;}
-        ModulatedDelayDSPProcessor.SetParameters(1,1,1,1);
+        DopplerModulationDSPProcessor.SetParameters(1,1,1,1);
 
-        ModulatedDelayDSPProcessor.ProcessAudioBuffer(InputAudio,InputModulation, OutputAudio, NumSamples); //TODO: for now i just put the input audio as modulation, a new channel needs to be added later
+        DopplerModulationDSPProcessor.ProcessAudioBuffer(InputAudio,InputModulation, OutputAudio, NumSamples); //TODO: for now i just put the input audio as modulation, a new channel needs to be added later
     }
 
-    const FVertexInterface& FModulatedDelayOperator::GetVertexInterface()
+    const FVertexInterface& FDopplerModulationOperator::GetVertexInterface()
     {
-        using namespace ModulatedDelayNode;
+        using namespace DopplerModulationNode;
 
         static const FVertexInterface Interface(
             FInputVertexInterface(
@@ -72,21 +71,21 @@ namespace Metasound
         return Interface;
     }
 
-    const FNodeClassMetadata& FModulatedDelayOperator::GetNodeInfo()
+    const FNodeClassMetadata& FDopplerModulationOperator::GetNodeInfo()
     {
         auto InitNodeInfo = []() -> FNodeClassMetadata
         {
             FNodeClassMetadata Info;
 
-            Info.ClassName        = { TEXT("UE"), TEXT("ModulatedDelay"), TEXT("Audio") };
+            Info.ClassName        = { TEXT("UE"), TEXT("DopplerModulation"), TEXT("Audio") };
             Info.MajorVersion     = 1;
             Info.MinorVersion     = 0;
-            Info.DisplayName      = LOCTEXT("Metasound_ModulatedDelayDisplayName", "ModulatedDelay");
-            Info.Description      = LOCTEXT("Metasound_ModulatedDelayNodeDescription", "Applies ModulatedDelay to the audio input.");
+            Info.DisplayName      = LOCTEXT("Metasound_DopplerModulationDisplayName", "DopplerModulation");
+            Info.Description      = LOCTEXT("Metasound_DopplerModulationNodeDescription", "Applies DopplerModulation to the audio input.");
             Info.Author           = PluginAuthor;
             Info.PromptIfMissing  = PluginNodeMissingPrompt;
             Info.DefaultInterface = GetVertexInterface();
-            Info.CategoryHierarchy = { LOCTEXT("Metasound_ModulatedDelayNodeCategory", "Utils") };
+            Info.CategoryHierarchy = { LOCTEXT("Metasound_DopplerModulationNodeCategory", "Utils") };
 
             return Info;
         };
@@ -96,9 +95,9 @@ namespace Metasound
         return Info;
     }
 
-    TUniquePtr<IOperator> FModulatedDelayOperator::CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors)
+    TUniquePtr<IOperator> FDopplerModulationOperator::CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors)
     {
-        using namespace ModulatedDelayNode;
+        using namespace DopplerModulationNode;
 
         const FDataReferenceCollection& InputCollection = InParams.InputDataReferences;
         const FInputVertexInterface& InputInterface     = GetVertexInterface().GetInputInterface();
@@ -107,20 +106,20 @@ namespace Metasound
         FAudioBufferReadRef ModulationIn = InputCollection.GetDataReadReferenceOrConstruct<FAudioBuffer>(METASOUND_GET_PARAM_NAME(InParamNameModulationInput), InParams.OperatorSettings);
 
         //The DSP operations are done by a seperate class so we can share the operations between different implementation types.
-        return MakeUnique<FModulatedDelayOperator>(InParams.OperatorSettings, AudioIn, ModulationIn);
+        return MakeUnique<FDopplerModulationOperator>(InParams.OperatorSettings, AudioIn, ModulationIn);
     }
 
 
     //------------------------------------------------------------------------------------
-    // FModulatedDelayNode
+    // FDopplerModulationNode
     //------------------------------------------------------------------------------------
-    FModulatedDelayNode::FModulatedDelayNode(const FNodeInitData& InitData)
-        : FNodeFacade(InitData.InstanceName, InitData.InstanceID, TFacadeOperatorClass<FModulatedDelayOperator>())
+    FDopplerModulationNode::FDopplerModulationNode(const FNodeInitData& InitData)
+        : FNodeFacade(InitData.InstanceName, InitData.InstanceID, TFacadeOperatorClass<FDopplerModulationOperator>())
     {
     
     }
 
-    METASOUND_REGISTER_NODE(FModulatedDelayNode)
+    METASOUND_REGISTER_NODE(FDopplerModulationNode)
 }
 
 #undef LOCTEXT_NAMESPACE

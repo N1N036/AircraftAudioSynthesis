@@ -1,4 +1,4 @@
-﻿#include "DSPProcessing/ModulatedDelay.h"
+﻿#include "DSPProcessing/DopplerModulation.h"
 #include "DSP/Delay.h"
 
 
@@ -7,20 +7,20 @@
 namespace DSPProcessing
 {
 
-    FModulatedDelay::FModulatedDelay()
+    FDopplerModulation::FDopplerModulation()
     {
 
     }
 
 
-    void FModulatedDelay::Init(float InSampleRate, float DelayTimeMax)
+    void FDopplerModulation::Init(float InSampleRate, float DelayTimeMax)
     {
 
         DelayBuffer.Init(InSampleRate, DelayTimeMax);
         DelayBuffer.SetDelayMsec(DelayTimeMax);
     }
 
-    void FModulatedDelay::SetParameters(float InDryLevel, float InWetLevel, float InFeedback, float InMaxDelayTime)
+    void FDopplerModulation::SetParameters(float InDryLevel, float InWetLevel, float InFeedback, float InMaxDelayTime)
     {
         DryLevel = InDryLevel;
         WetLevel = InWetLevel;
@@ -31,7 +31,7 @@ namespace DSPProcessing
 
 
 
-    void FModulatedDelay::ProcessAudioBuffer(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples)
+    void FDopplerModulation::ProcessAudioBuffer(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples)
     {
         float DelayLength = DelayBuffer.GetDelayLengthSamples();
         float FeedbackCoefficient = 0.0f;  //TODO: YES THIS IS WHAT I WANT!!!!! now i need to update this coefficient and streamline all the input and output stuff.

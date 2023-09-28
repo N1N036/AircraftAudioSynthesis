@@ -8,10 +8,10 @@
 
 namespace DSPProcessing
 {
-	class FModulatedDelay
+	class FDopplerModulation
 	{
 	public:
-		FModulatedDelay();
+		FDopplerModulation();
 
 		void Init(float InSampleRate, float DelayTimeMax);
 

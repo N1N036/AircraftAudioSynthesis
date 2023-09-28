@@ -1,12 +1,12 @@
-﻿#include "DSPProcessing/ModulatedDelay.h"
+﻿#include "DSPProcessing/DopplerModulation.h"
 #include "MetasoundEnumRegistrationMacro.h"
 #include "MetasoundParamHelper.h"
 
 namespace Metasound
 {
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ModulatedDelayNode"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_DopplerModulationNode"
 
-	namespace ModulatedDelayNode
+	namespace DopplerModulationNode
 	{
 		METASOUND_PARAM(InParamNameAudioInput, "In",        "Audio input.")
 		METASOUND_PARAM(InParamNameModulationInput,  "Modulation", "The delay modulation signal.")
@@ -14,14 +14,14 @@ namespace Metasound
 	}
 
 #undef LOCTEXT_NAMESPACE
-	class FModulatedDelayOperator : public TExecutableOperator<FModulatedDelayOperator>
+	class FDopplerModulationOperator : public TExecutableOperator<FDopplerModulationOperator>
 	{
 	public:
 		static const FNodeClassMetadata& GetNodeInfo();
 		static const FVertexInterface& GetVertexInterface();
 		static TUniquePtr<IOperator> CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors);
 
-		FModulatedDelayOperator(
+		FDopplerModulationOperator(
 			const FOperatorSettings& InSettings,
 			const FAudioBufferReadRef& InAudioInput,
 			const FAudioBufferReadRef& InModulationInput); //intentionally keeping this signal as float
@@ -40,13 +40,13 @@ namespace Metasound
 		Audio::FDelay DelayBuffer;
 
 		//The effect processor using a delay buffer.
-		DSPProcessing::FModulatedDelay ModulatedDelayDSPProcessor;
+		DSPProcessing::FDopplerModulation DopplerModulationDSPProcessor;
 
 		//FFloatReadRef Modulation; //again keep the mod signal as float for now.
 	};
-	class FModulatedDelayNode : public FNodeFacade
+	class FDopplerModulationNode : public FNodeFacade
 	{
 	public:
-		FModulatedDelayNode(const FNodeInitData& InitData);
+		FDopplerModulationNode(const FNodeInitData& InitData);
 	};
 }
