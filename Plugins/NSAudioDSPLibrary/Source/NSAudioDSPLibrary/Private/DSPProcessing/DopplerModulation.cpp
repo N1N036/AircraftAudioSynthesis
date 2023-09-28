@@ -37,7 +37,7 @@ namespace DSPProcessing
     }
 
     void FDopplerModulation::UpdateDelay() {
-        DelayBuffer.SetEasedDelayMsec(DelayTimeSeconds);
+        DelayBuffer.SetEasedDelayMsec(DelayTimeSeconds * 1000);
     }
 
 
@@ -56,7 +56,7 @@ namespace DSPProcessing
 
             /** Compute modulated delay length with feedback. */
             float ModulatedDelayLength = DelayLength - (DelayLength * (InModulation[FrameIndex] + InvertedModulationFeedback * FeedbackSample));
-
+            ModulatedDelayLength = FMath::Clamp(ModulatedDelayLength, 0, DelayLength); //for safety.
             /** Write the modulated sample to output buffer. */
             OutBuffer[FrameIndex] = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
 
