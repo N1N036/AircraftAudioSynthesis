@@ -19,7 +19,8 @@ namespace DSPProcessing
 			float InDelayFeedback,
 			float InModulationFeedback,
 			float InDelayTimeSeconds,
-			bool InInvertModulationSignal);
+			bool InInvertModulationSignal,
+			float InMaxSlope);
 
 		void UpdateDelay();
 
@@ -33,12 +34,17 @@ namespace DSPProcessing
 		float DelayTimeSeconds;
 		//bool InvertModulationSignal; local variable
 
-		float InvertedModulationFeedback;
+		float ModulationFeedback;
+
+		int ModulationSignalInverter {1};
+
+		float MaxSlope {1.0f};
 
 		// The internal delay buffer
 		Audio::FDelay DelayBuffer;
 		
 		float FeedbackSample{0.f};
+		float PrevModulationSignal {0.f};
 
 
 	};

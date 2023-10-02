@@ -17,27 +17,27 @@ namespace DSPProcessing
 
         DelayBuffer.Init(InSampleRate, DelayTimeMax);
         DelayBuffer.SetDelayMsec(DelayTimeMax);
+        DelayBuffer.SetEaseFactor(0.1f);
     }
 
     void FDopplerModulation::SetParameters(
         float InDelayFeedback,
         float InModulationFeedback,
         float InDelayTimeSeconds,
-        bool InInvertModulationSignal)
+        bool InInvertModulationSignal,
+        float InMaxSlope)
     {
         DelayFeedback = InDelayFeedback;
-        float ModulationFeedback = InModulationFeedback; 
+        ModulationFeedback = InModulationFeedback; 
         DelayTimeSeconds = InDelayTimeSeconds;
-        bool InvertModulationSignal = InInvertModulationSignal;
-
-        /** Invert the modulation feedback coefficient based on the boolean. */
-        InvertedModulationFeedback = InvertModulationSignal ? -ModulationFeedback : ModulationFeedback;
+        ModulationSignalInverter = (InInvertModulationSignal ? 1 : -1) ;
+        MaxSlope = InMaxSlope;
 
         UpdateDelay();
     }
 
     void FDopplerModulation::UpdateDelay() {
-        DelayBuffer.SetEasedDelayMsec(DelayTimeSeconds * 1000);
+        DelayBuffer.SetEasedDelayMsec(DelayTimeSeconds);
     }
 
 
@@ -46,21 +46,23 @@ namespace DSPProcessing
     void FDopplerModulation::ProcessAudioBuffer(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples)
     {
         float DelayLength = DelayBuffer.GetDelayLengthSamples();
+        float MaxSlopeDSP = MaxSlope / DelayLength;
+       
+        /** DSP Calculations. */
+            for (int32 FrameIndex = 0; FrameIndex < NumSamples; ++FrameIndex)
+            {
+                DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex] + DelayFeedback * FeedbackSample);
+                float RawModulationSignal = 0.5f * DelayLength + 0.5f * ModulationSignalInverter * DelayLength * (InModulation[FrameIndex] + ModulationFeedback * FeedbackSample);
 
+                // Low-pass filter the modulation signal
+                float FilteredModulationSignal {MaxSlope * RawModulationSignal + (1 - MaxSlope) * PrevModulationSignal};
+                PrevModulationSignal = FilteredModulationSignal;
 
-        for (int32 FrameIndex = 0; FrameIndex < NumSamples; ++FrameIndex)
-        {
+                float ModulatedDelayLength = DelayLength - FilteredModulationSignal;
+                ModulatedDelayLength = FMath::Clamp(ModulatedDelayLength, 0, DelayLength);
 
-            /** Write sample with feedback into delay buffer and increment */
-            DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex] + DelayFeedback * FeedbackSample);
-
-            /** Compute modulated delay length with feedback. */
-            float ModulatedDelayLength = DelayLength - (DelayLength * (InModulation[FrameIndex] + InvertedModulationFeedback * FeedbackSample));
-            ModulatedDelayLength = FMath::Clamp(ModulatedDelayLength, 0, DelayLength); //for safety.
-            /** Write the modulated sample to output buffer. */
-            OutBuffer[FrameIndex] = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
-
-            FeedbackSample = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
-        }
+                OutBuffer[FrameIndex] = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
+                FeedbackSample = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
+            }
     }
 }
