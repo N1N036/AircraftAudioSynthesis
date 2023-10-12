@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "AircraftAudioComponent.h"
 #include "Reaper.h"
+#include "Math/Vector.h"
+#include "Components/AudioComponent.h"
 #include "ReaperAudioComponent.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = "Aircraft", Meta = (BlueprintSpawnableComponent))
@@ -13,6 +15,9 @@ private:
 	UAudioComponent* PropAudioComponent{nullptr};
 	UAudioComponent* MotorAudioComponent{nullptr};
 	AReaper* Reaper{nullptr};
+
+public:
+
 	
 protected:
 	

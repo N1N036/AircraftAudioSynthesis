@@ -1,15 +1,10 @@
 ﻿#include "ReaperAudioComponent.h"
 
-#include "ReaperAudioComponent.h"
-
-#include "Reaper.h"
-
-#include "Math/Vector.h"
-#include "Components/AudioComponent.h"
 
 UReaperAudioComponent::UReaperAudioComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetComponentTickEnabled(true);
 
 }
 
@@ -25,50 +20,10 @@ void UReaperAudioComponent::BeginPlay()
 void UReaperAudioComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	float PropSpeed = EngineCommands[0].Throttle;
-	float Airspeed = AircraftState.CalibratedAirSpeedKts;
-	AActor* PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetPawn();
-	float DopplerShift{0.0};
-	// Conversion factor from feet to cm
-	const float FeetToCmFactor = 30.48; // :(
-	if (PlayerCharacter)
-	{
-		FVector PlayerVelocity{};
-		FVector PlayerPosition = PlayerCharacter->GetTransform().GetTranslation();
-		AAircraft* AircraftPlayer = Cast<AAircraft>(PlayerCharacter);
-		if (AircraftPlayer)
-		{
-			FVector VelocityNEDfps = AircraftPlayer->GetAircraftMovementComponent()->AircraftState.VelocityNEDfps;
-			
-			// Convert to cm/s
-			PlayerVelocity = VelocityNEDfps * FeetToCmFactor;
-
-		}
-		else
-		{
-			PlayerVelocity = GetOwner()->GetVelocity();
-		}
-
-		
-		FVector SourceVelocityNEDfps = Reaper->GetAircraftMovementComponent()->AircraftState.VelocityNEDfps;
-		FVector SourceVelocity = SourceVelocityNEDfps * FeetToCmFactor;
-		FVector SourcePosition = GetOwner()->GetActorLocation();
-		
-		const float SpeedOfSound = 34300.0f;
-
-		
-		DopplerShift = CalculateDopplerShift(SpeedOfSound,PlayerVelocity,PlayerPosition,SourceVelocity,SourcePosition);
-
-	}
-
-	
 	if(!PropAudioComponent){return;}
-	//for now i get the throttle since i know this returns a value, more setup of the flight model might be needed to get more acurate engine and prop info.
-	PropAudioComponent->SetFloatParameter("PropSpeed",PropSpeed);
-	PropAudioComponent->SetFloatParameter("Airspeed",Airspeed);
-	PropAudioComponent->SetFloatParameter("DopplerShift",DopplerShift);
-	
-	
-	
 
-}
+	//for now i get the throttle since i know this returns a value, more setup of the flight model might be needed to get more acurate engine and prop info.
+	PropAudioComponent->SetFloatParameter("PropSpeed", Reaper->GetPropSpeed());
+	PropAudioComponent->SetFloatParameter("Airspeed",GetAirSpeed());
+	PropAudioComponent->SetFloatParameter("DopplerShift",GetDopplerShift());
+};

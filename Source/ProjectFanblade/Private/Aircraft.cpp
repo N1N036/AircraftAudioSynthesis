@@ -3,11 +3,8 @@
 
 #include "Aircraft.h"
 
-#include "AircraftAudioComponent.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "JSBSimMovementComponent.h"
+#include "AircraftMovementRecorderComponent.h"
+
 
 DEFINE_LOG_CATEGORY_CLASS(AAircraft, LogAircraft)
 
@@ -22,7 +19,10 @@ AAircraft::AAircraft()
 	SkeletalMeshComponent->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	AircraftMovementComponent = CreateDefaultSubobject<UJSBSimMovementComponent>(TEXT("JSBSimMovementComponent"));
-
+	
+	AircraftMovementRecorderComponent =  CreateDefaultSubobject<UAircraftMovementRecorderComponent>(TEXT("AircraftMovementRecorderComponent"));
+	AircraftMovementRecorderComponent->RegisterComponent();
+	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(SkeletalMeshComponent);
 	CameraBoom->TargetArmLength = 2000; 
@@ -69,6 +69,8 @@ void AAircraft::Tick(float DeltaTime)
 
 	// Apply the new rotation to the camera
 	CameraComponent->SetWorldRotation(NewRotation);
+
+	
 }
 
 void AAircraft::SetJSBSIMVelocity(float Vnew)

@@ -8,6 +8,9 @@
 #include "GameFramework/Pawn.h"
 #include "Reaper.generated.h"
 
+
+class UReaperAudioComponent;
+
 /** The MQ-9 Reaper is a medium-sized unmanned aerial vehicle equipped with a turboprop engine.
  *  It boasts a long endurance and high altitude capability,
  *  making it suitable for a range of military operations. */
@@ -16,28 +19,35 @@ class PROJECTFANBLADE_API AReaper : public AAirplane
 {
 	GENERATED_BODY()
 
-public:
-	
+private:
+	float PropSpeed{0.0};
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAudioComponent* PropAudioComponent;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAudioComponent* MotorAudioComponent;
+	
+	UReaperAudioComponent* ReaperAircraftAudioComponent;
 
-public:
+
+private:
 	AReaper();
-
 	virtual void Tick(float DeltaTime) override;
-
+	virtual void BeginPlay() override;
 
 	
+public:
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	UAudioComponent* GetPropAudioComponent() const { return PropAudioComponent; }
 	
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	UAudioComponent* GetMotorAudioComponent() const { return MotorAudioComponent; }
 	
+	const float GetPropSpeed(){return PropSpeed;}
+	
+	
 protected:
 	
-	virtual void BeginPlay() override;
 };

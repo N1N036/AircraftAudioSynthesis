@@ -3,40 +3,67 @@
 
 #include "AircraftAudioComponent.h"
 
-#include "JSBSimMovementComponent.h"
-#include "GameFramework/Actor.h"
-#include "GameFramework/MovementComponent.h"
+#include "Aircraft.h"
 
+
+class AAircraft;
 DEFINE_LOG_CATEGORY_CLASS(UAircraftAudioComponent, LogAircraftAudio)
 
 UAircraftAudioComponent::UAircraftAudioComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetComponentTickEnabled(true);
 }
 
 void UAircraftAudioComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	/** Get and cast the movement component from the parent actor */
-	JSBSimMovementComp = Cast<UJSBSimMovementComponent>(GetOwner()->FindComponentByClass<UJSBSimMovementComponent>());}
+}
 
 void UAircraftAudioComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!JSBSimMovementComp){return;}
+	
+	AActor* PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetPawn();
+	AAircraft* OwnerAircraft = Cast<AAircraft>(GetOwner());
 
-	//Data to be used later in specific components to drive audio parameters.
-	AircraftState = JSBSimMovementComp->AircraftState;
-	EngineStates = JSBSimMovementComp->EngineStates;
-	EngineCommands = JSBSimMovementComp->EngineCommands;
-	Gears = JSBSimMovementComp->Gears;
-	
-	
+
+	//As the SJBSimMovement component doesn't inherit from a movement component GetVelocity() returns 0.
+	//Therefore we need to get the velocity from the flight dynamic model and convert from feet per second to meter per second.
+	const float FeetToCmFactor = 30.48; 
+
+		if (PlayerCharacter)
+		{
+			FVector PlayerVelocity{};
+			FVector PlayerPosition = PlayerCharacter->GetTransform().GetTranslation();
+			AAircraft* AircraftPlayer = Cast<AAircraft>(PlayerCharacter);
+			if (AircraftPlayer)
+			{
+				FVector VelocityNEDfps = AircraftPlayer->GetAircraftMovementComponent()->AircraftState.VelocityNEDfps;
+			
+				// Convert to cm/s
+				PlayerVelocity = VelocityNEDfps * FeetToCmFactor;
+
+			}
+			else
+			{
+				PlayerVelocity = GetOwner()->GetVelocity();
+			}
+
+			if(!OwnerAircraft){return;}
+			FVector SourceVelocityNEDfps = OwnerAircraft->GetAircraftMovementComponent()->AircraftState.VelocityNEDfps;
+			FVector SourceVelocity = SourceVelocityNEDfps * FeetToCmFactor;
+			FVector SourcePosition = GetOwner()->GetActorLocation();
+		
+			const float SpeedOfSound = 34300.0f;
+
+			AirSpeed = SourceVelocityNEDfps.Length();
+			DopplerShift = CalculateDopplerShift(SpeedOfSound,PlayerVelocity,PlayerPosition,SourceVelocity,SourcePosition);
+	}
 }
 
 
-float UAircraftAudioComponent::CalculateDopplerShift(float speedOfSound, 
+const float UAircraftAudioComponent::CalculateDopplerShift(float speedOfSound, 
 							const FVector& observerVelocity, const FVector& observerPosition, 
 							const FVector& sourceVelocity, const FVector& sourcePosition)
 {

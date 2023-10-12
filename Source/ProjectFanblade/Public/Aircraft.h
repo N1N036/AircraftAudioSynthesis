@@ -5,8 +5,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "JSBSimFlightDynamicsModel/Public/JSBSimMovementComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "JSBSimMovementComponent.h"
 #include "Aircraft.generated.h"
+
 
 
 
@@ -34,6 +38,9 @@ protected:
 	/** The movement component for the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftMovementComponent)
 	UJSBSimMovementComponent* AircraftMovementComponent {nullptr};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftMovementRecorderComponent)
+	UAircraftMovementRecorderComponent* AircraftMovementRecorderComponent {nullptr};
 
 	/** The audio component for the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftAudioComponent)
@@ -88,7 +95,8 @@ public:
 	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 	
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE	UJSBSimMovementComponent* GetMovement() const { return AircraftMovementComponent; };
+	FORCEINLINE UAircraftMovementRecorderComponent* GetAircraftMovementRecorderComponent() const { return AircraftMovementRecorderComponent; };
+	
 
 	UFUNCTION(BlueprintGetter)
 	FORCEINLINE int32 GetWeight() const { return Weight; }

@@ -9,6 +9,7 @@
 #include "Airplane.generated.h"
 
 class UAircraftEngineComponent;
+
 /** Base class for airplanes. */
 UCLASS(Abstract, ClassGroup = "Aircraft")
 class PROJECTFANBLADE_API AAirplane : public AAircraft
