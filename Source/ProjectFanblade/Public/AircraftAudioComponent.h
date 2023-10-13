@@ -15,9 +15,6 @@ class PROJECTFANBLADE_API UAircraftAudioComponent : public UActorComponent
 	
 	DECLARE_LOG_CATEGORY_CLASS(LogAircraftAudio, Log, All)
 
-public:
-
-	
 protected:
 	float DopplerShift{0.0};
 	float AirSpeed{0.0};

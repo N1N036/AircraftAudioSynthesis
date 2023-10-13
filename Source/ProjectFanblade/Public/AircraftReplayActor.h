@@ -1,4 +1,6 @@
-﻿#include "Aircraft.h"
+﻿#pragma once
+
+#include "Aircraft.h"
 #include "AircraftMovementDataAsset.h"
 #include "AircraftReplayActor.generated.h"
 

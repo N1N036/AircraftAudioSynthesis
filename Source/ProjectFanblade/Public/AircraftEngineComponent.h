@@ -87,17 +87,17 @@ private:
 
 public:
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE float GetPower() const { return Power; }
+	float GetPower() const { return Power; }
 
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE float GetPowerTarget() const { return PowerTarget; }
+	float GetPowerTarget() const { return PowerTarget; }
 
 	UFUNCTION(BlueprintSetter)
-	FORCEINLINE void SetPower(const float Value) { PowerTarget = FMath::Clamp(Value, IdlePower, 100.0f); }
+	void SetPower(const float Value) { PowerTarget = FMath::Clamp(Value, IdlePower, 100.0f); }
 
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE float GetOutputThrust() const { return OutputThrust; }
+	float GetOutputThrust() const { return OutputThrust; }
 
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE EEngineState GetEngineState() const { return EngineState; }
+	EEngineState GetEngineState() const { return EngineState; }
 };

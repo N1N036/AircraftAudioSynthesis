@@ -42,8 +42,8 @@ protected:
 	
 public:
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE AAircraft* GetAircraft() const { return Aircraft; }
+	AAircraft* GetAircraft() const { return Aircraft; }
 	
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE FVector GetVelocity() const { return Velocity; }
+	FVector GetVelocity() const { return Velocity; }
 };

@@ -33,5 +33,5 @@ protected:
 
 public:
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE TArray<UAircraftEngineComponent*> GetEngines() const { return Engines; }
+	TArray<UAircraftEngineComponent*> GetEngines() const { return Engines; }
 };

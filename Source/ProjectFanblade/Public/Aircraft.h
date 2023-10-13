@@ -80,28 +80,28 @@ protected:
 
 public:
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }
+	USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }
 	
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE UJSBSimMovementComponent* GetAircraftMovementComponent() const { return AircraftMovementComponent; }
+	UJSBSimMovementComponent* GetAircraftMovementComponent() const { return AircraftMovementComponent; }
 
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE UAircraftAudioComponent* GetAircraftAudioComponent() const { return AircraftAudioComponent; }
+	UAircraftAudioComponent* GetAircraftAudioComponent() const { return AircraftAudioComponent; }
 
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComponent; }
+	UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 	
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE UAircraftMovementRecorderComponent* GetAircraftMovementRecorderComponent() const { return AircraftMovementRecorderComponent; };
+	UAircraftMovementRecorderComponent* GetAircraftMovementRecorderComponent() const { return AircraftMovementRecorderComponent; };
 	
 
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE int32 GetWeight() const { return Weight; }
+	int32 GetWeight() const { return Weight; }
 	
 	UFUNCTION(BlueprintGetter)
-	FORCEINLINE bool GetIsAirborne() const { return IsAirborne; }
+	bool GetIsAirborne() const { return IsAirborne; }
 	
 };
