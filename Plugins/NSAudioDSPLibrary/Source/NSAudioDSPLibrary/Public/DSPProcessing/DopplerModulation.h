@@ -1,10 +1,9 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "MetasoundEnumRegistrationMacro.h"
-#include "MetasoundParamHelper.h"
+#include "DSPProcessing/Helpers/ParamSmoother.h"
 #include "DSP/Delay.h"
-#include "MetasoundBuilderInterface.h"
+
 
 namespace DSPProcessing
 {
@@ -13,38 +12,37 @@ namespace DSPProcessing
 	public:
 		FDopplerModulation();
 
-		void Init(float InSampleRate, float DelayTime);
+		void InitDelayFeedbackParamSmoothing(float SmoothingTimeInMs, float SampleRate);
+		void InitModulationFeedbackParamSmoothing(float SmoothingTimeInMs, float SampleRate);
+		void InitMaxSlopeParamSmoothing(float SmoothingTimeInMs, float SampleRate);
+		void InitDelayBuffer(float DelayTimeMax, float SmoothingFactor, float InSampleRate);
+		
+		void SetDelayFeedback(float InDelayFeedback);
+		void SetModulationFeedback(float InModulationFeedback);
+		void SetDelayTimeSeconds(float InDelayTimeSeconds);
+		void SetInvertModulationSignal(bool InInVertModulationSignal);
+		void SetMaxSlope(float InMaxSlope);
 
-		void SetParameters(
-			float InDelayFeedback,
-			float InModulationFeedback,
-			float InDelayTimeSeconds,
-			bool InInvertModulationSignal,
-			float InMaxSlope);
-
-		void UpdateDelay();
 
 		
 		void ProcessAudioBuffer(const float* InBuffer,const float* InModulation, float* OutBuffer, int32 NumSamples);
 
+		
 	private:
+		
+		void ProcessDopplerModulation(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples);
 
-		float DelayFeedback;
-		//float ModulationFeedback; local variable
-		float DelayTimeSeconds;
-		//bool InvertModulationSignal; local variable
+		bool InvertModulationSignal;
 
-		float ModulationFeedback;
-
-		int ModulationSignalInverter {1};
-
-		float MaxSlope {1.0f};
-
-		// The internal delay buffer
+		ParamSmootherLPF DelayFeedbackParamSmootherLPF;
+		ParamSmootherLPF ModulationFeedbackParamSmootherLPF;
+		ParamSmootherLPF MaxSlopeParamSmootherLPF;
+		
 		Audio::FDelay DelayBuffer;
 		
-		float FeedbackSample{0.f};
-		float PrevModulationSignal {0.f};
+		float FeedbackSample{0.0f};
+		float PrevModulationSignal{0.0f};
+
 
 
 	};
