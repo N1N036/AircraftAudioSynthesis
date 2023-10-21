@@ -17,9 +17,18 @@ private:
 	AReaper* Reaper{nullptr};
 
 public:
+	UPROPERTY(Interp)
+	float PropSpeed{0.0f};
+
+	UPROPERTY(Interp)
+	float Airspeed{0.0f};
+	
+
+	
 
 	
 protected:
+	
 	
 	UReaperAudioComponent();
 	

@@ -81,3 +81,4 @@ const float UAircraftAudioComponent::CalculateDopplerShift(float speedOfSound,
 		return PitchScale;
 	}
 }
+

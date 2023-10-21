@@ -39,9 +39,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftMovementComponent)
 	UJSBSimMovementComponent* AircraftMovementComponent {nullptr};
 
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftMovementRecorderComponent)
-	UAircraftMovementRecorderComponent* AircraftMovementRecorderComponent {nullptr};
-
 	/** The audio component for the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftAudioComponent)
 	UAircraftAudioComponent* AircraftAudioComponent {nullptr};
@@ -93,10 +90,6 @@ public:
 	
 	UFUNCTION(BlueprintGetter)
 	UCameraComponent* GetCameraComponent() const { return CameraComponent; }
-	
-	UFUNCTION(BlueprintGetter)
-	UAircraftMovementRecorderComponent* GetAircraftMovementRecorderComponent() const { return AircraftMovementRecorderComponent; };
-	
 
 	UFUNCTION(BlueprintGetter)
 	int32 GetWeight() const { return Weight; }

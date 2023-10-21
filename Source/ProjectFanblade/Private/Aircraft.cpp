@@ -3,7 +3,7 @@
 
 #include "Aircraft.h"
 
-#include "AircraftMovementRecorderComponent.h"
+
 
 
 DEFINE_LOG_CATEGORY_CLASS(AAircraft, LogAircraft)
@@ -19,9 +19,7 @@ AAircraft::AAircraft()
 	SkeletalMeshComponent->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	AircraftMovementComponent = CreateDefaultSubobject<UJSBSimMovementComponent>(TEXT("JSBSimMovementComponent"));
-	
-	AircraftMovementRecorderComponent =  CreateDefaultSubobject<UAircraftMovementRecorderComponent>(TEXT("AircraftMovementRecorderComponent"));
-	AircraftMovementRecorderComponent->RegisterComponent();
+
 	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(SkeletalMeshComponent);
@@ -69,7 +67,6 @@ void AAircraft::Tick(float DeltaTime)
 
 	// Apply the new rotation to the camera
 	CameraComponent->SetWorldRotation(NewRotation);
-
 	
 }
 
