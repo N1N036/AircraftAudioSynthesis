@@ -29,7 +29,15 @@ namespace Metasound
         , MaxSlopeInput(InMaxSlopeInput)
         , AudioOutput(FAudioBufferWriteRef::CreateNew(InSettings))
     {
-        DopplerModulationDSPProcessor.Init(InSettings.GetSampleRate(), 1.0); //For now i set the max delay time to arbitrary number 1
+        const float SampleRate            = InSettings.GetSampleRate();
+        constexpr float SmoothingTimeInMs = 21.33f;
+        constexpr float DelaySmoothingFactor = 0.7f;
+        
+        DopplerModulationDSPProcessor.InitDelayFeedbackParamSmoothing(SmoothingTimeInMs, SampleRate);
+        DopplerModulationDSPProcessor.InitModulationFeedbackParamSmoothing(SmoothingTimeInMs, SampleRate);
+        DopplerModulationDSPProcessor.InitMaxSlopeParamSmoothing(SmoothingTimeInMs, SampleRate);
+        
+        DopplerModulationDSPProcessor.InitDelayBuffer(MaxDelayTimeSeconds,DelaySmoothingFactor, SampleRate);
     };
 
     FDataReferenceCollection FDopplerModulationOperator::GetInputs() const
@@ -63,28 +71,7 @@ namespace Metasound
         return OutputDataReferences;
     }
 
-    void FDopplerModulationOperator::Execute()
-    {
-        /** Audio buffer values. */
-        const float* InputAudio{ AudioInput->GetData() };
-        const float* InputModulation{ ModulationInput->GetData() };
-        float* OutputAudio{ AudioOutput->GetData() };
 
-
-        /** Parameters. */
-        float DelayFeedbackClamped{ FMath::Clamp(*DelayFeedbackInput, 0.0f, 1.0f - SMALL_NUMBER) };
-        float ModulationFeedbackClamped{ FMath::Clamp(*ModulationFeedbackInput, 0.0f, 1.0f - SMALL_NUMBER) };
-        float DelayTimeClamped{ FMath::Clamp(*DelayTimeInput, 0.0f, 1.0f ) }; //TODO: GetMaxDelayTime.
-        bool InvertModulationSignal{ *InvertModulationSignalInput };
-        float MaxSlope {*MaxSlopeInput};
-
-        const int32 NumSamples = AudioInput->Num();
-
-        if(!InputAudio || !OutputAudio){return;}
-        DopplerModulationDSPProcessor.SetParameters(DelayFeedbackClamped, ModulationFeedbackClamped, DelayTimeClamped, InvertModulationSignal,MaxSlope);
-
-        DopplerModulationDSPProcessor.ProcessAudioBuffer(InputAudio,InputModulation, OutputAudio, NumSamples);
-    }
 
     const FVertexInterface& FDopplerModulationOperator::GetVertexInterface()
     {
@@ -164,6 +151,32 @@ namespace Metasound
         : FNodeFacade(InitData.InstanceName, InitData.InstanceID, TFacadeOperatorClass<FDopplerModulationOperator>())
     {
     
+    }
+    void FDopplerModulationOperator::Execute()
+    {
+        /** Audio buffer values. */
+        const float* InputAudio{ AudioInput->GetData() };
+        const float* InputModulation{ ModulationInput->GetData() };
+        float* OutputAudio{ AudioOutput->GetData() };
+
+
+        /** Parameters. */
+        float DelayFeedbackClamped{ FMath::Clamp(*DelayFeedbackInput, 0.0f, 1.0f - SMALL_NUMBER) };
+        float ModulationFeedbackClamped{ FMath::Clamp(*ModulationFeedbackInput, 0.0f, 1.0f - SMALL_NUMBER) };
+        float DelayTimeClamped{ FMath::Clamp(*DelayTimeInput, DopplerModulationNode::MinMaxDelaySeconds, DopplerModulationNode::MaxMaxDelaySeconds ) }; //TODO: GetMaxDelayTime.
+        bool InvertModulationSignal{ *InvertModulationSignalInput };
+        float MaxSlope {*MaxSlopeInput};
+
+        const int32 NumSamples = AudioInput->Num();
+        //DopplerModulationDSPProcessor.SetParameters(DelayFeedbackClamped, ModulationFeedbackClamped, DelayTimeClamped, InvertModulationSignal,MaxSlope);
+        DopplerModulationDSPProcessor.SetDelayFeedback(DelayFeedbackClamped);
+        DopplerModulationDSPProcessor.SetModulationFeedback(ModulationFeedbackClamped);
+        DopplerModulationDSPProcessor.SetDelayTimeSeconds(DelayTimeClamped);
+        DopplerModulationDSPProcessor.SetInvertModulationSignal(InvertModulationSignal);
+        DopplerModulationDSPProcessor.SetMaxSlope(MaxSlope);
+        
+        
+        DopplerModulationDSPProcessor.ProcessAudioBuffer(InputAudio,InputModulation, OutputAudio, NumSamples);
     }
 
     METASOUND_REGISTER_NODE(FDopplerModulationNode)
