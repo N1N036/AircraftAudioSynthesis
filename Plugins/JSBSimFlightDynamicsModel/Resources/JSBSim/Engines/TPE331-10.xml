@@ -12,7 +12,7 @@
 -->
 
 <turbine_engine name="TPE331-10">
-  <milthrust>  2016.0 </milthrust>
+  <milthrust>  4016.0 </milthrust>
   <bypassratio>     0.0  </bypassratio>
   <tsfc>            0.55 </tsfc>
   <bleed>           0.03 </bleed>

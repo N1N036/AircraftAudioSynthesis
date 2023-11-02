@@ -26,8 +26,16 @@ public class NSAudioDSPLibrary : ModuleRules
             new string[]
             {
                 "Core",
-                "MetasoundFrontend",
                 "MetasoundGraphCore",
+                "MetasoundFrontend",
+                "AudioExtensions",
+                "Serialization",
+                "SignalProcessing",
+                "CoreUObject",
+                "Engine",
+                "Projects",
+
+    
             }
             );
             
@@ -35,8 +43,10 @@ public class NSAudioDSPLibrary : ModuleRules
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
+                "Core",
                 "CoreUObject",
                 "Engine",
+                "AudioMixer",
                 "SignalProcessing",
             }
             );

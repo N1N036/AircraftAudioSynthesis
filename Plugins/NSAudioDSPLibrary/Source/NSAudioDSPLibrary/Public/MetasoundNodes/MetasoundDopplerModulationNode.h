@@ -25,7 +25,7 @@ namespace Metasound
 
 		static constexpr float MinMaxDelaySeconds = 0.001f;
 		static constexpr float MaxMaxDelaySeconds = 1000.f;
-		static constexpr float DefaultMaxDelaySeconds = 5.0f;
+		static constexpr float DefaultMaxDelaySeconds = 1.0f;
 	}
 
 #undef LOCTEXT_NAMESPACE
@@ -66,7 +66,7 @@ namespace Metasound
 		FFloatReadRef MaxSlopeInput;
 		
 		
-		float MaxDelayTimeSeconds{ 1.0 }; //TODO: figure out how to get the max delay value from Delay::"
+		float MaxDelayTimeSeconds{ 1.0f }; //TODO: figure out how to get the max delay value from Delay::"
 
 		// The internal delay buffer
 		Audio::FDelay DelayBuffer;
