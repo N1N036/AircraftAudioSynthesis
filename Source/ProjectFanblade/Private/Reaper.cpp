@@ -1,14 +1,14 @@
 // Copyright (c) 2023-present Nino Saglia & Tim Verberne. All rights reserved.
 // Written by Tim Verberne.
 #include "Reaper.h"
-#include "ReaperAudioComponent.h"
+#include "ReaperAudioController.h"
 #include "Components/AudioComponent.h"
 
 AReaper::AReaper()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	ReaperAircraftAudioComponent = CreateDefaultSubobject<UReaperAudioComponent>(TEXT("ReaperAudioComponent"));
+	ReaperAircraftAudioController = CreateDefaultSubobject<UReaperAudioController>(TEXT("ReaperAudioController"));
 	
 	PropAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("PropAudioComponent"));
 	PropAudioComponent->SetupAttachment(SkeletalMeshComponent);

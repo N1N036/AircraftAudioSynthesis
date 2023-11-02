@@ -9,7 +9,7 @@
 #include "Reaper.generated.h"
 
 
-class UReaperAudioComponent;
+class UReaperAudioController;
 
 /** The MQ-9 Reaper is a medium-sized unmanned aerial vehicle equipped with a turboprop engine.
  *  It boasts a long endurance and high altitude capability,
@@ -29,7 +29,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAudioComponent* MotorAudioComponent;
 	
-	UReaperAudioComponent* ReaperAircraftAudioComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UReaperAudioController* ReaperAircraftAudioController;
 
 
 private:

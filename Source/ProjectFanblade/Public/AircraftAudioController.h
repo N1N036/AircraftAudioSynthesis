@@ -6,10 +6,10 @@
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
 #include "GameFramework/Actor.h"
-#include "AircraftAudioComponent.generated.h"
+#include "AircraftAudioController.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = "Aircraft", Meta = (BlueprintSpawnableComponent))
-class PROJECTFANBLADE_API UAircraftAudioComponent : public UActorComponent
+class PROJECTFANBLADE_API UAircraftAudioController : public UActorComponent
 {
 	GENERATED_BODY()
 	
@@ -21,7 +21,7 @@ protected:
 	
 
 public:
-	UAircraftAudioComponent();
+	UAircraftAudioController();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

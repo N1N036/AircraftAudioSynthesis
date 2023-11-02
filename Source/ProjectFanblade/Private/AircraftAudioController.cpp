@@ -1,33 +1,33 @@
 // Copyright (c) 2023-present Nino Saglia & Tim Verberne. All rights reserved.
 // Written by Tim Verberne.
 
-#include "AircraftAudioComponent.h"
+#include "AircraftAudioController.h"
 
 #include "Aircraft.h"
 
 
 class AAircraft;
-DEFINE_LOG_CATEGORY_CLASS(UAircraftAudioComponent, LogAircraftAudio)
+DEFINE_LOG_CATEGORY_CLASS(UAircraftAudioController, LogAircraftAudio)
 
-UAircraftAudioComponent::UAircraftAudioComponent()
+UAircraftAudioController::UAircraftAudioController()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetComponentTickEnabled(true);
 }
 
-void UAircraftAudioComponent::BeginPlay()
+void UAircraftAudioController::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void UAircraftAudioComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UAircraftAudioController::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
 	AActor* PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetPawn();
 	AAircraft* OwnerAircraft = Cast<AAircraft>(GetOwner());
 
-
+	//DEPRECATED
 	//As the SJBSimMovement component doesn't inherit from a movement component GetVelocity() returns 0.
 	//Therefore we need to get the velocity from the flight dynamic model and convert from feet per second to meter per second.
 	const float FeetToCmFactor = 30.48; 
@@ -63,7 +63,7 @@ void UAircraftAudioComponent::TickComponent(float DeltaTime, ELevelTick TickType
 }
 
 
-const float UAircraftAudioComponent::CalculateDopplerShift(float speedOfSound, 
+const float UAircraftAudioController::CalculateDopplerShift(float speedOfSound, 
 							const FVector& observerVelocity, const FVector& observerPosition, 
 							const FVector& sourceVelocity, const FVector& sourcePosition)
 {

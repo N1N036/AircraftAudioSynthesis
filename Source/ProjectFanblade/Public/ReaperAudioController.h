@@ -1,19 +1,18 @@
 ﻿#pragma once
-#include "AircraftAudioComponent.h"
+#include "AircraftAudioController.h"
 #include "Reaper.h"
 #include "Math/Vector.h"
 #include "Components/AudioComponent.h"
-#include "ReaperAudioComponent.generated.h"
+#include "ReaperAudioController.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = "Aircraft", Meta = (BlueprintSpawnableComponent))
-class PROJECTFANBLADE_API UReaperAudioComponent : public UAircraftAudioComponent
+class PROJECTFANBLADE_API UReaperAudioController : public UAircraftAudioController
 {
 	GENERATED_BODY()
 
 
 private:
 	UAudioComponent* PropAudioComponent{nullptr};
-	UAudioComponent* MotorAudioComponent{nullptr};
 	AReaper* Reaper{nullptr};
 
 public:
@@ -30,7 +29,7 @@ public:
 protected:
 	
 	
-	UReaperAudioComponent();
+	UReaperAudioController();
 	
 	virtual void BeginPlay() override;
 

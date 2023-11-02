@@ -8,7 +8,7 @@ public class ProjectFanblade : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "JSBSimFlightDynamicsModel" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "JSBSimFlightDynamicsModel","AudioExtensions" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

@@ -1,23 +1,22 @@
-﻿#include "ReaperAudioComponent.h"
+﻿#include "ReaperAudioController.h"
 
 
-UReaperAudioComponent::UReaperAudioComponent()
+UReaperAudioController::UReaperAudioController()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetComponentTickEnabled(true);
 
 }
 
-void UReaperAudioComponent::BeginPlay()
+void UReaperAudioController::BeginPlay()
 {
 	Super::BeginPlay();
 	Reaper = Cast<AReaper>(GetOwner());
 	if(!Reaper){return;}
 	PropAudioComponent = Reaper->GetPropAudioComponent();
-	MotorAudioComponent = Reaper->GetMotorAudioComponent();
 }
 
-void UReaperAudioComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UReaperAudioController::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if(!PropAudioComponent){return;}

@@ -41,7 +41,7 @@ protected:
 
 	/** The audio component for the aircraft. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftAudioComponent)
-	UAircraftAudioComponent* AircraftAudioComponent {nullptr};
+	UAircraftAudioController* AircraftAudioController {nullptr};
 
 	/** The SpringArm that will handle the camera's motion and zoom. */
 	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetCameraBoom)
@@ -83,7 +83,7 @@ public:
 	UJSBSimMovementComponent* GetAircraftMovementComponent() const { return AircraftMovementComponent; }
 
 	UFUNCTION(BlueprintGetter)
-	UAircraftAudioComponent* GetAircraftAudioComponent() const { return AircraftAudioComponent; }
+	UAircraftAudioController* GetAircraftAudioComponent() const { return AircraftAudioController; }
 
 	UFUNCTION(BlueprintGetter)
 	USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
