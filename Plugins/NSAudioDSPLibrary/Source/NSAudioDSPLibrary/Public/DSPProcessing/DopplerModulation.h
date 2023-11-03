@@ -30,8 +30,6 @@ namespace DSPProcessing
 		
 	private:
 		
-		void ProcessDopplerModulation(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples);
-
 		bool InvertModulationSignal;
 
 		ParamSmootherLPF DelayFeedbackParamSmootherLPF;
@@ -42,8 +40,6 @@ namespace DSPProcessing
 		
 		float FeedbackSample{0.0f};
 		float PrevModulationSignal{0.0f};
-
-
-
+		
 	};
 }

@@ -31,7 +31,7 @@ namespace Metasound
     {
         const float SampleRate            = InSettings.GetSampleRate();
         constexpr float SmoothingTimeInMs = 21.33f;
-        constexpr float DelaySmoothingFactor = 0.7f;
+        constexpr float DelaySmoothingFactor = 0.07f;
         
         DopplerModulationDSPProcessor.InitDelayFeedbackParamSmoothing(SmoothingTimeInMs, SampleRate);
         DopplerModulationDSPProcessor.InitModulationFeedbackParamSmoothing(SmoothingTimeInMs, SampleRate);

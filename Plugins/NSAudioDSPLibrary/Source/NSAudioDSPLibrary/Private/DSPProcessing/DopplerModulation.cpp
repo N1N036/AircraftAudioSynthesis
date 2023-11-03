@@ -6,7 +6,6 @@
 
 namespace DSPProcessing
 {
-
     FDopplerModulation::FDopplerModulation()
     {
     }
@@ -80,6 +79,9 @@ namespace DSPProcessing
         /** DSP Calculations. */
         for (int32 FrameIndex = 0; FrameIndex < NumSamples; ++FrameIndex)
         {
+
+            //Linear method.
+            
             DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex] + DelayFeedbackStrength * FeedbackSample);
             float RawModulationSignal = 0.5f * DelayLength + 0.5f * 1 * DelayLength * (InModulation[FrameIndex] + ModulationFeedbackStrength * FeedbackSample);
 
@@ -92,31 +94,8 @@ namespace DSPProcessing
 
             OutBuffer[FrameIndex] = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
             FeedbackSample = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
-        }
-    }
 
-    void FDopplerModulation::ProcessDopplerModulation(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples)
-    {
-        float CurrentMaxSlope = DelayFeedbackParamSmootherLPF.GetValue();
-        float ModulationFeedbackStrength = ModulationFeedbackParamSmootherLPF.GetValue();
-        float DelayFeedbackStrength = DelayFeedbackParamSmootherLPF.GetValue();
-        float DelayLength = DelayBuffer.GetDelayLengthSamples();
-        
-        /** DSP Calculations. */
-        for (int32 FrameIndex = 0; FrameIndex < NumSamples; ++FrameIndex)
-        {
-            DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex] + DelayFeedbackStrength * FeedbackSample);
-            float RawModulationSignal = 0.5f * DelayLength + 0.5f * 1 * DelayLength * (InModulation[FrameIndex] + ModulationFeedbackStrength * FeedbackSample);
-
-            // Low-pass filter the modulation signal
-            float FilteredModulationSignal {CurrentMaxSlope * RawModulationSignal + (1 - CurrentMaxSlope) * PrevModulationSignal};
-            PrevModulationSignal = FilteredModulationSignal;
-
-            float ModulatedDelayLength = DelayLength - FilteredModulationSignal;
-            ModulatedDelayLength = FMath::Clamp(ModulatedDelayLength, 0, DelayLength);
-
-            OutBuffer[FrameIndex] = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
-            FeedbackSample = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
+            //Vectorized method.
         }
     }
 }
