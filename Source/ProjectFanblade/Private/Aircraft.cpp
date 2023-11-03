@@ -11,7 +11,6 @@ DEFINE_LOG_CATEGORY_CLASS(AAircraft, LogAircraft)
 AAircraft::AAircraft()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = Root;
 	
@@ -19,6 +18,8 @@ AAircraft::AAircraft()
 	SkeletalMeshComponent->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	AircraftMovementComponent = CreateDefaultSubobject<UJSBSimMovementComponent>(TEXT("JSBSimMovementComponent"));
+	AircraftMovementComponent->SetTickGroup(TG_PrePhysics);
+
 
 	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));

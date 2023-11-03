@@ -18,7 +18,6 @@ class PROJECTFANBLADE_API UAircraftAudioController : public UActorComponent
 protected:
 	float DopplerShift{0.0};
 	float AirSpeed{0.0};
-	
 
 public:
 	UAircraftAudioController();

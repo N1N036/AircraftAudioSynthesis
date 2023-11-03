@@ -23,14 +23,7 @@ private:
 	float PropSpeed{0.0};
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UAudioComponent* PropAudioComponent;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UAudioComponent* MotorAudioComponent;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UReaperAudioController* ReaperAircraftAudioController;
+
 
 
 private:
@@ -40,13 +33,7 @@ private:
 
 	
 public:
-	UFUNCTION(BlueprintCallable, Category = "Audio")
-	UAudioComponent* GetPropAudioComponent() const { return PropAudioComponent; }
-	
-	UFUNCTION(BlueprintCallable, Category = "Audio")
-	UAudioComponent* GetMotorAudioComponent() const { return MotorAudioComponent; }
-	
-	const float GetPropSpeed(){return PropSpeed;}
+
 	
 	
 protected:

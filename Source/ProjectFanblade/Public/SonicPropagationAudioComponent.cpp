@@ -197,7 +197,7 @@ TArray<FSoundHistoryEntry> USonicPropagationAudioComponent::GetCurrentAudibleSou
                 FTransform BlendedTransform;
 
                 //Perform a binary approximation to find the right alpha value for ElapsedTime = TimeRequired.
-                float AlphaLow = 0.0f, AlphaHigh = 1.0f, Alpha;
+                float AlphaLow = 0.0f, AlphaHigh = 1.0f, Alpha = 0.5f;
                 const float Tolerance = 0.001f;
                 while (AlphaHigh - AlphaLow > Tolerance) 
                 {
