@@ -1,7 +1,6 @@
 ﻿#include "DSPProcessing/DopplerModulation.h"
 #include "DSP/Delay.h"
-
-
+#include "DSP/Filter.h"
 
 
 namespace DSPProcessing
@@ -10,22 +9,32 @@ namespace DSPProcessing
     {
     }
     
-
-    void FDopplerModulation::InitDelayFeedbackParamSmoothing(float SmoothingTimeInMs, float SampleRate)
+    void FDopplerModulation::SetSampleRate(float InSampleRate)
     {
-        DelayFeedbackParamSmootherLPF.Init(SmoothingTimeInMs, SampleRate);
+        SampleRate = InSampleRate;
+    }
+    
+
+    void FDopplerModulation::InitDelayFeedbackParamSmoothing(float SmoothingTimeInMs, float InSampleRate)
+    {
+        DelayFeedbackParamSmootherLPF.Init(SmoothingTimeInMs, InSampleRate);
        
     }
 
-    void FDopplerModulation::InitModulationFeedbackParamSmoothing(float SmoothingTimeInMs, float SampleRate)
+    void FDopplerModulation::InitModulationFeedbackParamSmoothing(float SmoothingTimeInMs, float InSampleRate)
     {
-        ModulationFeedbackParamSmootherLPF.Init(SmoothingTimeInMs, SampleRate);
+        ModulationFeedbackParamSmootherLPF.Init(SmoothingTimeInMs, InSampleRate);
     }
     
     
-    void FDopplerModulation::InitMaxSlopeParamSmoothing(float SmoothingTimeInMs, float SampleRate)
+    void FDopplerModulation::InitModulationLowPassParamSmoothing(float SmoothingTimeInMs, float InSampleRate)
     {
-        MaxSlopeParamSmootherLPF.Init(SmoothingTimeInMs, SampleRate);
+        ModulationLowPassParamSmootherLPF.Init(SmoothingTimeInMs, InSampleRate);
+    }
+    
+    void FDopplerModulation::InitModulationHighPassParamSmoothing(float SmoothingTimeInMs, float InSampleRate)
+    {
+        ModulationHighPassParamSmootherLPF.Init(SmoothingTimeInMs, InSampleRate);
     }
 
     void FDopplerModulation::InitDelayBuffer(float DelayTimeMax,float SmoothingFactor, float InSampleRate)
@@ -59,19 +68,32 @@ namespace DSPProcessing
         InvertModulationSignal = InInvertModulationSignal;
     }
 
-    void FDopplerModulation::SetMaxSlope(float InMaxSlope)
+    void FDopplerModulation::SetModulationLowPass(float InLowPass)
     {
-        MaxSlopeParamSmootherLPF.SetNewParamValue(InMaxSlope);
+        float LowPass = CalculateFilterAlpha(SampleRate,InLowPass);
+        ModulationLowPassParamSmootherLPF.SetNewParamValue(LowPass);
     }
 
+    void FDopplerModulation::SetModulationHighPass(float InHighPass)
+    {
+        float HighPass = CalculateFilterAlpha(SampleRate,InHighPass);
+        ModulationHighPassParamSmootherLPF.SetNewParamValue(HighPass);
+    }
 
-
+    
+    float FDopplerModulation::CalculateFilterAlpha(float InSampleRate, float CutoffFrequency)
+    {
+        float Tan = FMath::Tan(PI * CutoffFrequency / InSampleRate);
+        return ( Tan - 1 ) / ( Tan + 1 );
+    }
 
 
 
     void FDopplerModulation::ProcessAudioBuffer(const float* InBuffer, const float* InModulation, float* OutBuffer, int32 NumSamples)
     {
-        float CurrentMaxSlope = MaxSlopeParamSmootherLPF.GetValue();
+        float LowPassAlpha = ModulationLowPassParamSmootherLPF.GetValue();
+        float HighPassaAlpha = ModulationHighPassParamSmootherLPF.GetValue();
+
         float ModulationFeedbackStrength = ModulationFeedbackParamSmootherLPF.GetValue();
         float DelayFeedbackStrength = DelayFeedbackParamSmootherLPF.GetValue();
         float DelayLength = DelayBuffer.GetDelayLengthSamples();
@@ -80,22 +102,19 @@ namespace DSPProcessing
         for (int32 FrameIndex = 0; FrameIndex < NumSamples; ++FrameIndex)
         {
 
-            //Linear method.
-            
             DelayBuffer.WriteDelayAndInc(InBuffer[FrameIndex] + DelayFeedbackStrength * FeedbackSample);
             float RawModulationSignal = 0.5f * DelayLength + 0.5f * 1 * DelayLength * (InModulation[FrameIndex] + ModulationFeedbackStrength * FeedbackSample);
 
             // Low-pass filter the modulation signal
-            float FilteredModulationSignal {CurrentMaxSlope * RawModulationSignal + (1 - CurrentMaxSlope) * PrevModulationSignal};
+            float FilteredModulationSignal = (RawModulationSignal + LowPassAlpha * PrevModulationSignal - HighPassaAlpha * PrevModulationSignal)/3;
             PrevModulationSignal = FilteredModulationSignal;
-
+            
             float ModulatedDelayLength = DelayLength - FilteredModulationSignal;
             ModulatedDelayLength = FMath::Clamp(ModulatedDelayLength, 0.0f, DelayLength);
 
             OutBuffer[FrameIndex] = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
             FeedbackSample = DelayBuffer.ReadDelayAt(ModulatedDelayLength);
 
-            //Vectorized method.
         }
     }
 }

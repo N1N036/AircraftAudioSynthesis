@@ -18,7 +18,8 @@ namespace Metasound
         const FFloatReadRef& InModulationFeedbackInput,
         const FFloatReadRef& InDelayTimeInput,
         const FBoolReadRef& InInvertModulationSignalInput,
-        const FFloatReadRef& InMaxSlopeInput
+        const FFloatReadRef& InModulationLowPassInput,
+        const FFloatReadRef& InModulationHighPassInput
     )
         : AudioInput(InAudioInput)
         , ModulationInput(InModulationInput)
@@ -26,16 +27,19 @@ namespace Metasound
         , ModulationFeedbackInput(InModulationFeedbackInput)
         , DelayTimeInput(InDelayTimeInput)
         , InvertModulationSignalInput(InInvertModulationSignalInput)
-        , MaxSlopeInput(InMaxSlopeInput)
+        , ModulationLowPass(InModulationLowPassInput)
+        , ModulationHighPass(InModulationHighPassInput)
         , AudioOutput(FAudioBufferWriteRef::CreateNew(InSettings))
     {
         const float SampleRate            = InSettings.GetSampleRate();
-        constexpr float SmoothingTimeInMs = 21.33f;
+        constexpr float SmoothingTimeInMs = 0.7f;
         constexpr float DelaySmoothingFactor = 0.07f;
         
+        DopplerModulationDSPProcessor.SetSampleRate(SampleRate);
         DopplerModulationDSPProcessor.InitDelayFeedbackParamSmoothing(SmoothingTimeInMs, SampleRate);
         DopplerModulationDSPProcessor.InitModulationFeedbackParamSmoothing(SmoothingTimeInMs, SampleRate);
-        DopplerModulationDSPProcessor.InitMaxSlopeParamSmoothing(SmoothingTimeInMs, SampleRate);
+        DopplerModulationDSPProcessor.InitModulationLowPassParamSmoothing(SmoothingTimeInMs, SampleRate);
+        DopplerModulationDSPProcessor.InitModulationHighPassParamSmoothing(SmoothingTimeInMs, SampleRate);
         
         DopplerModulationDSPProcessor.InitDelayBuffer(MaxDelayTimeSeconds,DelaySmoothingFactor, SampleRate);
     };
@@ -52,7 +56,8 @@ namespace Metasound
         InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameModulationFeedbackInput), ModulationFeedbackInput);
         InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameDelayTimeInput), DelayTimeInput);
         InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameInvertModulationSignalInput), InvertModulationSignalInput);
-        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameMaxSlopeInput), MaxSlopeInput);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameModlationLowPassInput), ModulationLowPass);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameModlationHighPassInput), ModulationHighPass);
 
      
 
@@ -85,7 +90,8 @@ namespace Metasound
                 TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameModulationFeedbackInput), 0.0f),
                 TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameDelayTimeInput), 1.0f),
                 TInputDataVertex<bool>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameInvertModulationSignalInput), 0.0f),
-                TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameMaxSlopeInput), 1.0f)
+                TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameModlationLowPassInput), 22000.0f),
+                TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameModlationHighPassInput), 0.0f)
 
             ),
 
@@ -137,10 +143,11 @@ namespace Metasound
         FFloatReadRef ModulationFeedbackIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameModulationFeedbackInput), InParams.OperatorSettings);
         FFloatReadRef DelayTimeIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameDelayTimeInput), InParams.OperatorSettings);
         FBoolReadRef InvertModulationIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<bool>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameInvertModulationSignalInput), InParams.OperatorSettings);
-        FFloatReadRef MaxSlopeIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameMaxSlopeInput), InParams.OperatorSettings);
+        FFloatReadRef ModulationLowPassIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameModlationLowPassInput), InParams.OperatorSettings);
+        FFloatReadRef ModulationHighPassIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameModlationHighPassInput), InParams.OperatorSettings);
 
-        //The DSP operations are done by a seperate class so we can share the operations between different implementation types.
-        return MakeUnique<FDopplerModulationOperator>(InParams.OperatorSettings, AudioIn, ModulationIn, DelayFeedbackIn, ModulationFeedbackIn, DelayTimeIn, InvertModulationIn, MaxSlopeIn);
+        //The DSP operations are handled by a different class so we can share the operations between different implementation types.
+        return MakeUnique<FDopplerModulationOperator>(InParams.OperatorSettings, AudioIn, ModulationIn, DelayFeedbackIn, ModulationFeedbackIn, DelayTimeIn, InvertModulationIn, ModulationLowPassIn, ModulationHighPassIn);
     }
 
 
@@ -165,7 +172,8 @@ namespace Metasound
         float ModulationFeedbackClamped{ FMath::Clamp(*ModulationFeedbackInput, 0.0f, 1.0f - SMALL_NUMBER) };
         float DelayTimeClamped{ FMath::Clamp(*DelayTimeInput, DopplerModulationNode::MinMaxDelaySeconds, DopplerModulationNode::MaxMaxDelaySeconds ) }; //TODO: GetMaxDelayTime.
         bool InvertModulationSignal{ *InvertModulationSignalInput };
-        float MaxSlope {*MaxSlopeInput};
+        float LowPass {*ModulationLowPass};
+        float HighPass {*ModulationHighPass};
 
         const int32 NumSamples = AudioInput->Num();
         //DopplerModulationDSPProcessor.SetParameters(DelayFeedbackClamped, ModulationFeedbackClamped, DelayTimeClamped, InvertModulationSignal,MaxSlope);
@@ -173,8 +181,8 @@ namespace Metasound
         DopplerModulationDSPProcessor.SetModulationFeedback(ModulationFeedbackClamped);
         DopplerModulationDSPProcessor.SetDelayTimeSeconds(DelayTimeClamped);
         DopplerModulationDSPProcessor.SetInvertModulationSignal(InvertModulationSignal);
-        DopplerModulationDSPProcessor.SetMaxSlope(MaxSlope);
-        
+        DopplerModulationDSPProcessor.SetModulationLowPass(LowPass);
+        DopplerModulationDSPProcessor.SetModulationHighPass(HighPass);
         
         DopplerModulationDSPProcessor.ProcessAudioBuffer(InputAudio,InputModulation, OutputAudio, NumSamples);
     }

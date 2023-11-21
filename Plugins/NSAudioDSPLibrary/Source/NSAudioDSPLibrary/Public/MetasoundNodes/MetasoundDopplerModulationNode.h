@@ -13,13 +13,17 @@ namespace Metasound
 	namespace DopplerModulationNode
 	{
 		METASOUND_PARAM(InParamNameAudioInput, "In", "Audio input.")
-			METASOUND_PARAM(InParamNameModulationInput, "Modulation", "The delay modulation signal.")
+		METASOUND_PARAM(InParamNameModulationInput, "Modulation", "The delay modulation signal.")
 
-			METASOUND_PARAM(InParamNameDelayFeedbackInput, "DelayFeedback", "How much the output signal will be fed back into the inpot signal.")
-			METASOUND_PARAM(InParamNameModulationFeedbackInput, "ModulationFeedback", "How much the output signal will be fed back into the modulation signal.")
-			METASOUND_PARAM(InParamNameDelayTimeInput, "DelayTime", "How long the delay sould be, the modulation modulates from no delay to this delay time.")
-			METASOUND_PARAM(InParamNameInvertModulationSignalInput, "InvertModulation", "Flip the modulation signal for a variation of the modulation feedback effect.")
-			METASOUND_PARAM(InParamNameMaxSlopeInput, "MaxModulationSlope", "The maximum slope the modulation  can be.")
+		METASOUND_PARAM(InParamNameDelayFeedbackInput, "DelayFeedback", "How much the output signal will be fed back into the inpot signal.")
+		METASOUND_PARAM(InParamNameModulationFeedbackInput, "ModulationFeedback", "How much the output signal will be fed back into the modulation signal.")
+		METASOUND_PARAM(InParamNameDelayTimeInput, "DelayTime", "How long the delay sould be, the modulation modulates from no delay to this delay time.")
+		METASOUND_PARAM(InParamNameInvertModulationSignalInput, "InvertModulation", "Flip the modulation signal for a variation of the modulation feedback effect.")
+		METASOUND_PARAM(InParamNameModlationLowPassInput, "ModulationLowPass", "Low pass the modulation signal.")
+		METASOUND_PARAM(InParamNameModlationHighPassInput, "ModulationHighPass", "High pass the modulation signal.")
+	
+		
+
 			
 			METASOUND_PARAM(OutParamNameAudio, "Out","Audio output.")
 
@@ -44,7 +48,8 @@ namespace Metasound
 			const FFloatReadRef& InModulationFeedbackInput,
 			const FFloatReadRef& InDelayTimeInput,
 			const FBoolReadRef& InInvertModulationSignalInput,
-			const FFloatReadRef& InMaxSlopeInput
+			const FFloatReadRef& InModulationLowPassInput,
+			const FFloatReadRef& InModulationHighPassInput
 		);
 
 		virtual FDataReferenceCollection GetInputs()  const override;
@@ -63,7 +68,8 @@ namespace Metasound
 		FFloatReadRef ModulationFeedbackInput;
 		FFloatReadRef DelayTimeInput;
 		FBoolReadRef InvertModulationSignalInput;
-		FFloatReadRef MaxSlopeInput;
+		FFloatReadRef ModulationLowPass;
+		FFloatReadRef ModulationHighPass;
 		
 		
 		float MaxDelayTimeSeconds{ 1.0f }; //TODO: figure out how to get the max delay value from Delay::"
