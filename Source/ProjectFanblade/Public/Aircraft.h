@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AircraftFlightRecordComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -19,7 +20,7 @@ class UCapsuleComponent;
 class UAircraftMovementComponent;
 
 /** Base class for aircraft. */
-UCLASS(Abstract, BlueprintType, ClassGroup = "Aircraft")
+UCLASS(Blueprintable, BlueprintType, ClassGroup = "Aircraft")
 class PROJECTFANBLADE_API AAircraft : public APawn
 {
 	GENERATED_BODY()
@@ -32,23 +33,22 @@ protected:
 	USceneComponent* Root {nullptr};
 	
 	/** The skeletal mesh component for the aircraft. */
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetSkeletalMeshComponent)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, BlueprintGetter = GetSkeletalMeshComponent)
 	USkeletalMeshComponent* SkeletalMeshComponent {nullptr};
 
 	/** The movement component for the aircraft. */
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftMovementComponent)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, BlueprintGetter = GetAircraftMovementComponent)
 	UJSBSimMovementComponent* AircraftMovementComponent {nullptr};
 
-	/** The audio component for the aircraft. */
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetAircraftAudioComponent)
-	UAircraftAudioController* AircraftAudioController {nullptr};
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, BlueprintGetter = GetAircraftFlightRecordComponent)
+	UAircraftFlightRecordComponent* AircraftFlightRecordComponent {nullptr};
 
 	/** The SpringArm that will handle the camera's motion and zoom. */
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetCameraBoom)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, BlueprintGetter = GetCameraBoom)
 	USpringArmComponent* CameraBoom {nullptr};
 
 	/** The camera of the aircraft. */
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetCameraComponent)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, BlueprintGetter = GetCameraComponent)
 	UCameraComponent* CameraComponent {nullptr};
 
 	/** The weight of the aircraft. */
@@ -63,14 +63,12 @@ public:
 	AAircraft();
 
 	virtual void Tick(float DeltaTime) override;
-
-	/** Exposing the velocity of the JSBSim comp to BP.*/
-	UFUNCTION(BlueprintCallable)
-	void SetJSBSIMVelocity(float Vnew);
-
+	
 	/** Returns the aircraft's relative height. */
 	UFUNCTION(BlueprintCallable)
 	double GetAltitude() const;
+	
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -83,7 +81,7 @@ public:
 	UJSBSimMovementComponent* GetAircraftMovementComponent() const { return AircraftMovementComponent; }
 
 	UFUNCTION(BlueprintGetter)
-	UAircraftAudioController* GetAircraftAudioComponent() const { return AircraftAudioController; }
+	UAircraftFlightRecordComponent* GetAircraftFlightRecordComponent() const { return AircraftFlightRecordComponent; };
 
 	UFUNCTION(BlueprintGetter)
 	USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

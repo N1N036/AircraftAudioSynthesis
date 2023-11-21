@@ -205,6 +205,7 @@ TArray<FSoundHistoryEntry> USonicPropagationAudioComponent::GetCurrentAudibleSou
 
                     float ElapsedTime = CurrentTime - FMath::Lerp(Entry.WorldTimeSeconds,PreEntry->WorldTimeSeconds,Alpha);
                     float TimeRequired = FVector::Distance(Lerp(Entry.Transform.GetLocation(),PreEntry->Transform.GetLocation(), Alpha), InListenerLocation) / SpeedOfSoundCmPs;
+
                     if ( ElapsedTime > TimeRequired)
                     {
                         AlphaLow = Alpha;
@@ -213,6 +214,7 @@ TArray<FSoundHistoryEntry> USonicPropagationAudioComponent::GetCurrentAudibleSou
                     {
                         AlphaHigh = Alpha;
                     }
+                    
                 }
                 if(Alpha < 0)
                 {
@@ -225,6 +227,7 @@ TArray<FSoundHistoryEntry> USonicPropagationAudioComponent::GetCurrentAudibleSou
                 else
                 {
                     BlendedTransform.Blend( Entry.Transform,PreEntry->Transform,  Alpha);
+
                     FSoundHistoryEntry SoundDataOut;
                     SoundDataOut.Transform = BlendedTransform;
                     SoundDataOut.AudioParameters = Entry.AudioParameters;
@@ -253,12 +256,14 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
     TMap<UAudioComponent*,FSoundHistoryEntry> ComponentAndDataMap;
     int MaxSimultaneousSounds = 4;
 
+
+    
     for(FSoundHistoryEntry AudibleSoundLocation : AudibleSoundLocations)
     {
         UAudioComponent* AppropriateAudioComponent = nullptr;
 
     //Get the closest sound component to the target location.
-    float SmallestDistance = 1000000000;
+    float SmallestDistance = 100000000;
     if (!AppropriateAudioComponent)
     {
         
@@ -287,7 +292,7 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
         }
 
     //Check if we can make a audio component.
-    if (!AppropriateAudioComponent)
+    if (!AppropriateAudioComponent && AudioComponents.Num() < MaxSimultaneousSounds)
     {
         AppropriateAudioComponent = NewObject<UAudioComponent>(this, UAudioComponent::StaticClass());
         AppropriateAudioComponent->SetSound(SoundBase);
@@ -326,16 +331,21 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
         ComponentAndDataMap.Add(AppropriateAudioComponent,AudibleSoundLocation);
     }
     
-    float PendingToFadeOutTime = 0.5f;
+    float PendingToFadeOutTime = 1.0f;
     for(UAudioComponent* Comp : AudioComponents)
     {
         if(!ComponentAndDataMap.Contains(Comp))
         {
-            PendingFadeoutAudioComponents.Add(Comp,GetWorld()->GetTimeSeconds());
+            if(!PendingFadeoutAudioComponents.Contains(Comp))
+            {
+                PendingFadeoutAudioComponents.Add(Comp,GetWorld()->GetTimeSeconds());
+            }
             
-            if(*PendingFadeoutAudioComponents.Find(Comp) > GetWorld()->GetTimeSeconds() - PendingToFadeOutTime)
+            //find the comp and the time it was added to the queue, check if it should be faded out.
+            if(*PendingFadeoutAudioComponents.Find(Comp) < GetWorld()->GetTimeSeconds() - PendingToFadeOutTime)
             {
                 Comp->FadeOut(.5,0);
+                PendingFadeoutAudioComponents.Remove(Comp);
             }
         }
         else

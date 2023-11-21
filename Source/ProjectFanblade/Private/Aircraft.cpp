@@ -4,8 +4,6 @@
 #include "Aircraft.h"
 
 
-
-
 DEFINE_LOG_CATEGORY_CLASS(AAircraft, LogAircraft)
 
 AAircraft::AAircraft()
@@ -20,7 +18,7 @@ AAircraft::AAircraft()
 	AircraftMovementComponent = CreateDefaultSubobject<UJSBSimMovementComponent>(TEXT("JSBSimMovementComponent"));
 	AircraftMovementComponent->SetTickGroup(TG_PrePhysics);
 
-
+	AircraftFlightRecordComponent = CreateDefaultSubobject<UAircraftFlightRecordComponent>(TEXT("AircraftFlightRecord"));
 	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(SkeletalMeshComponent);
@@ -34,10 +32,7 @@ AAircraft::AAircraft()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	CameraComponent->bUsePawnControlRotation = false;
-
-	PrimaryActorTick.bCanEverTick = true;
-
-
+	
 }
 
 void AAircraft::BeginPlay()
@@ -71,11 +66,6 @@ void AAircraft::Tick(float DeltaTime)
 	
 }
 
-void AAircraft::SetJSBSIMVelocity(float Vnew)
-{
-	AircraftMovementComponent->AircraftState.CalibratedAirSpeedKts = Vnew;
-
-}
 
 double AAircraft::GetAltitude() const
 {
