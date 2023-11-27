@@ -71,7 +71,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	UAircraftCommandsDataAsset* CommandsDataAsset;
 
-	UFUNCTION(CallInEditor, DisplayName="Draw the recorded flight path")
+	UPROPERTY(EditInstanceOnly)
+	float TimeOffset = 0;
+
+	UFUNCTION(BlueprintCallable,CallInEditor, DisplayName="Draw the recorded flight path")
 	void DrawRecordedFlightPath();
 
 	

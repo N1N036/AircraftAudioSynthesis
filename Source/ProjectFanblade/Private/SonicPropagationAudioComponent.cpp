@@ -31,7 +31,7 @@ void USonicPropagationAudioComponent::TickComponent(float DeltaTime, ELevelTick 
     
     //Clean up any data that was added too long ago.
 
-    CleanUpOldEntries(World->GetTimeSeconds(),60);
+    CleanUpOldEntries(World->GetTimeSeconds(),10);
     
     //Pass the current state of the sound component to the history for later use. 
     SoundHistoryEntries.Add(CurrentAudioDataEntry);
@@ -114,15 +114,42 @@ void USonicPropagationAudioComponent::ApplyInstantAudioParameters(TArray<FAudioP
 
 void USonicPropagationAudioComponent::BlueprintRecordSourceVelocityToCurrentDataEntry(float VelocityIn)
 {
-    CurrentAudioDataEntry.SpeedOfSourceCmPs = VelocityIn;
+    //CurrentAudioDataEntry.SpeedOfSourceCmPs = VelocityIn;
 }
 
 void USonicPropagationAudioComponent::RecordSourceStateToCurrentDataEntry()
 {
+    FVector SourceVelocity;
+    if (PrevComponentLocation != FVector::Zero())
+    {
+        SourceVelocity = (GetComponentLocation() - PrevComponentLocation) / GetWorld()->DeltaTimeSeconds;
+    }
+    
+    CurrentAudioDataEntry.SpeedOfSourceCmPs = SourceVelocity;
+    PrevComponentLocation = GetComponentLocation();
     CurrentAudioDataEntry.Transform = GetComponentTransform();
     CurrentAudioDataEntry.WorldTimeSeconds = GetWorld()->GetTimeSeconds();
     CurrentAudioDataEntry.AudioParameters.AddZeroed();
-    PrevCompLocation = GetComponentLocation();
+}
+
+float USonicPropagationAudioComponent::GetDopplerPitchMultiplier(FVector InLastListenerLocation, FVector InListenerLocation, FVector InSourceVelocity, FVector InSourceLocation, float InDeltaSeconds)
+{
+    static const float SpeedOfSoundCmPerSec = 33000.f;
+    
+    FVector ListenerVelocity = (InListenerLocation - InLastListenerLocation) / InDeltaSeconds;
+
+    // Calculate the velocity of the listener and source relative to the direction of the source
+    FVector SourceToListener = InListenerLocation - InSourceLocation;
+    SourceToListener.Normalize();
+
+    float ListenerVelocityInDirection = FVector::DotProduct(ListenerVelocity, SourceToListener);
+    float SourceVelocityInDirection  = FVector::DotProduct(InSourceVelocity, SourceToListener);
+
+    // Calculate the pitch scale
+    float DifferenceInPitch = (SourceVelocityInDirection - ListenerVelocityInDirection) / SpeedOfSoundCmPerSec;
+    float PitchMultiplier = 1 + DifferenceInPitch;
+    float const ClampedPitchMultiplier = FMath::Clamp(PitchMultiplier, UE_SMALL_NUMBER,2.0f);
+    return ClampedPitchMultiplier;
 }
 
 
@@ -138,11 +165,40 @@ void USonicPropagationAudioComponent::ApplyDataToSoundComponent(FSoundHistoryEnt
 {
     if(!InAudioComponent){return;}
     InAudioComponent->SetWorldTransform(Entry.Transform);
+    FVector LastSoundLocation;
+    if (SoundHistoryEntries.Num() > 0)
+    {
+        int CurrentIndex = SoundHistoryEntries.Find(CurrentAudioDataEntry);
+        if (CurrentIndex != INDEX_NONE)
+        {
+            // Compute the index of the previous entry.
+            int PreviousIndex = (CurrentIndex - 1 + SoundHistoryEntries.Num()) % SoundHistoryEntries.Num();
+            LastSoundLocation = SoundHistoryEntries[PreviousIndex].Transform.GetLocation();
+        }
+    }
+
+    float DopplerPitchToApply = GetDopplerPitchMultiplier(
+        LastListenerLocation,
+        GetListenerLocation(),
+        Entry.SpeedOfSourceCmPs,
+        Entry.Transform.GetLocation(),
+        GetWorld()->DeltaTimeSeconds);
+    LastListenerLocation = GetListenerLocation();
+
+    FAudioParameter DopplerParam;
+    DopplerParam.FloatParam = DopplerPitchToApply;
+    DopplerParam.ParamName = TEXT("SonicPropagationDopplerShift");
+    DopplerParam.ParamType = EAudioParameterType::Float;
+    
+    Entry.AudioParameters.Add(DopplerParam);
         InAudioComponent->SetParameters(MoveTemp(Entry.AudioParameters));
         if (bDrawDebug)
         {
-            DrawDebugSphere(GetWorld(), Entry.Transform.GetLocation(), 30.f, 4, FColor::Purple, false, 20.f, 0, 20.f);
+            DrawDebugSphere(GetWorld(), Entry.Transform.GetLocation(), 300.f, 4, FColor::Purple, false, 0.f, 0, 20.f);
         }
+
+    
+    
 }
 
 
@@ -254,7 +310,7 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
 {
     
     TMap<UAudioComponent*,FSoundHistoryEntry> ComponentAndDataMap;
-    int MaxSimultaneousSounds = 4;
+    int MaxSimultaneousSounds = 2;
 
 
     
@@ -263,7 +319,7 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
         UAudioComponent* AppropriateAudioComponent = nullptr;
 
     //Get the closest sound component to the target location.
-    float SmallestDistance = 100000000;
+    float SmallestDistance = MaxDistanceBetweenContinuousSounds;
     if (!AppropriateAudioComponent)
     {
         
@@ -280,14 +336,16 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
         }
     }
         /**
-         * A sonic boom pressure wave has reached the listener if:
-         *  - A sound had become audioble at a new location.
+         * Sonic boom detection.
+         * At this point we kow that there is a new audible sound location that isn't close to the previous locations.
+         * This reveal of a new location is a sonic boom event if:
          *  - the source velocity is above the speed of sound at the time this sound was created.
+         *  - The number of locations the sound can be heard from is 2 or more.
          */
-        if(!AppropriateAudioComponent && AudibleSoundLocation.SpeedOfSourceCmPs > SpeedOfSoundCmPs && SoundHistoryEntries.Num() > 1)
+        if(!AppropriateAudioComponent && AudibleSoundLocation.SpeedOfSourceCmPs.Size() > SpeedOfSoundCmPs && SoundHistoryEntries.Num() > 1 && AudibleSoundLocations.Num() >= 2)
         {
             FVector Location = AudibleSoundLocation.Transform.GetLocation();
-            float MachValue = AudibleSoundLocation.SpeedOfSourceCmPs / SpeedOfSoundCmPs;
+            float MachValue = AudibleSoundLocation.SpeedOfSourceCmPs.Size() / SpeedOfSoundCmPs;
             OnSonicBoom.Broadcast(Location, MachValue);
         }
 
@@ -301,6 +359,7 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
         AppropriateAudioComponent->SetMobility(EComponentMobility::Movable);
         AppropriateAudioComponent->RegisterComponent();
         AppropriateAudioComponent->Play();
+        AppropriateAudioComponent->FadeIn(SoundFadeInTime);
         AudioComponents.Add(AppropriateAudioComponent);
 
         // Draw debug sphere at the new audio component's location
@@ -331,9 +390,9 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
         ComponentAndDataMap.Add(AppropriateAudioComponent,AudibleSoundLocation);
     }
     
-    float PendingToFadeOutTime = 1.0f;
-    for(UAudioComponent* Comp : AudioComponents)
+    for (int32 i = AudioComponents.Num() - 1; i >= 0; --i)
     {
+        UAudioComponent* Comp = AudioComponents[i];
         if(!ComponentAndDataMap.Contains(Comp))
         {
             if(!PendingFadeoutAudioComponents.Contains(Comp))
@@ -342,15 +401,24 @@ TMap<UAudioComponent*,FSoundHistoryEntry> USonicPropagationAudioComponent::GetAu
             }
             
             //find the comp and the time it was added to the queue, check if it should be faded out.
-            if(*PendingFadeoutAudioComponents.Find(Comp) < GetWorld()->GetTimeSeconds() - PendingToFadeOutTime)
+            if(*PendingFadeoutAudioComponents.Find(Comp) < GetWorld()->GetTimeSeconds() - SoundFadeOutTime)
             {
-                Comp->FadeOut(.5,0);
+                if (Comp && Comp != nullptr && !Comp->IsPendingKill())
+                {
+                    Comp->FadeOut(SoundFadeOutTime, 0);
+                    AudioComponents.Remove(Comp);
+                }
                 PendingFadeoutAudioComponents.Remove(Comp);
             }
         }
         else
         {
             PendingFadeoutAudioComponents.Remove(Comp);
+        }
+
+        if(Comp->IsReadyForOwnerToAutoDestroy())
+        {
+            Comp->DestroyComponent();
         }
     }
     return ComponentAndDataMap;

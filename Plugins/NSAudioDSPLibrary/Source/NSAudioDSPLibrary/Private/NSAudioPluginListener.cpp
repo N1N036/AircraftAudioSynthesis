@@ -35,8 +35,8 @@ void NSAudioPluginListener::OnListenerUpdated(FAudioDevice* AudioDevice, const i
     for(FActiveSound* ActiveSound : ActiveSounds)
     {
         bool bImplementsDopplerInterface = ActiveSound->GetSound()->ImplementsParameterInterface(DopplerShiftInterface);
-        if(!bImplementsDopplerInterface){continue;}  // Changed from return to continue
-        if(!ActiveSound->bLocationDefined){continue;} // Changed from return to continue
+        if(!bImplementsDopplerInterface){continue;}  
+        if(!ActiveSound->bLocationDefined){continue;}
         
         FVector LastSoundLocation;
         FVector SoundLocation = ActiveSound->LastLocation;
@@ -67,9 +67,9 @@ void NSAudioPluginListener::OnListenerUpdated(FAudioDevice* AudioDevice, const i
     for (int32 i = SoundsInMap.Num() - 1; i >= 0; --i)
     {
         FActiveSound* Sound = SoundsInMap[i];
-        if (Sound->bFinished)
+        if (Sound && Sound->bFinished)
         {
-            LastSoundLocationMap.Remove(Sound); // Correctly remove the finished sound from the map
+            LastSoundLocationMap.Remove(Sound); 
         }
     }
 }

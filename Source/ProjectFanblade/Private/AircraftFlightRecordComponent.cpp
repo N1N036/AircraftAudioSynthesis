@@ -79,7 +79,7 @@ void UAircraftFlightRecordComponent::DrawRecordedFlightPath()
 				10.0f,
 				FColor::Green, 
 				false,
-				10.0f
+				600.0f
 			);
 		}
 	}
@@ -116,7 +116,7 @@ void UAircraftFlightRecordComponent::UpdateReplayMode()
         {
             int NumberOfEntries = CommandsDataAsset->CommandsCollectionEntries.Num();
             if(NumberOfEntries == 0){return;}
-            float CurrentTime = GetWorld()->GetTimeSeconds();
+            float CurrentTime = GetWorld()->GetTimeSeconds() + TimeOffset;
             float LatestTimeInEntries = CommandsDataAsset->CommandsCollectionEntries[NumberOfEntries - 1].CurrentTimeSeconds;
 
             //Wrap the time around depending on the last history entry.

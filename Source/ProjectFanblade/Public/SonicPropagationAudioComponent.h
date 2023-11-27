@@ -31,7 +31,7 @@ struct FSoundHistoryEntry
 	UPROPERTY(BlueprintReadWrite, Category = "Sound")
 	float WorldTimeSeconds;
 
-	float SpeedOfSourceCmPs;
+	FVector SpeedOfSourceCmPs;
 	
 	bool bFlagForRemoval = false;
 
@@ -73,6 +73,8 @@ public:
 
 	
 	void RecordSourceStateToCurrentDataEntry();
+	float GetDopplerPitchMultiplier(FVector InLastListenerLocation, FVector InListenerLocation,
+	                                FVector InLastSourceLocation, FVector InSourceLocation, float InDeltaSeconds);
 
 	void SetSpeedOfSound(float InSpeedOfSoundCmPs);
 
@@ -82,11 +84,12 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	USoundBase* SoundBase;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	bool bDrawDebug = false;
 
 protected:
 	float SpeedOfSoundCmPs = 34300.0f;
+	FVector PrevComponentLocation;
 
 	virtual void BeginPlay() override;
 	
@@ -106,9 +109,7 @@ protected:
 		GetWorld()->GetAudioDevice()->GetListenerPosition(0, ListenerLocation, false);
 		return ListenerLocation;
 	}
-	FVector PrevCompLocation;
-	
-	
+	FVector LastListenerLocation;
 	TArray<FSoundHistoryEntry> SoundHistoryEntries;
 	
 	FSoundHistoryEntry CurrentAudioDataEntry;
@@ -124,6 +125,10 @@ protected:
 
 
 private:
+	float SoundFadeOutTime = .6f;
+	float SoundFadeInTime =.6f;
+	float TimeUntilCleanup = .6f;
+	float MaxDistanceBetweenContinuousSounds = FMath::Pow(10000.0 , 2.0); //100 meter. 
 	FVector ListenerLocation;
 };
 

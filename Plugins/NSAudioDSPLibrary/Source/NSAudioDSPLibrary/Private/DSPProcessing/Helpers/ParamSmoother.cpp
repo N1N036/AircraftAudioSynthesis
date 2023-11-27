@@ -17,7 +17,7 @@ namespace DSPProcessing
 	{
 		const float TransitionTimeInSamples = InTransitionTimeInMs * SampleRate * 0.001; // ms to samples
 
-		Step = 1.0f - FMath::Exp(-2.0f * PI / static_cast<float>(TransitionTimeInSamples));
+		Step = 1.0f - FMath::Exp(-2.0f * PI / FMath::Clamp(static_cast<float>(TransitionTimeInSamples),UE_SMALL_NUMBER,100));
 	}
 
 	void ParamSmootherLPF::SetNewParamValue(float InNewParamValue)
